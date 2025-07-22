@@ -13,12 +13,50 @@
 ### セットアップ
 
 ```bash
-git clone <repository-url>
-cd rap-bot
+git clone https://github.com/ms-engineer-bc25-06/TeamA_Section8.git
+cd TeamA_Section8
 npm install
 cp .env.example .env.local
 # .env.localに必要な環境変数を設定
 npm run dev
+```
+
+## 📁 ディレクトリ構成
+
+```
+project-root/
+├── src/
+│   ├── pages/
+│   │   └── api/
+│   │       └── line/
+│   │           └── webhook.ts       ← LINEからのWebhook受信
+│   ├── lib/
+│   │   ├── openai.ts                ← OpenAIラップ生成処理
+│   │   ├── rhyme.ts                 ← 韻辞典API連携ロジック
+│   │   ├── emotion.ts               ← 感情分析用ロジック
+│   │   ├── tts.ts                   ← 音声合成API処理（Google TTSなど）
+│   │   └── logger.ts                ← 共通ログ処理
+│   └── utils/
+│       ├── constants.ts             ← 定数・共通メッセージ
+│       └── helpers.ts               ← 汎用ユーティリティ関数
+├── prisma/
+│   ├── schema.prisma                ← DBスキーマ
+│   └── seed.ts                      ← 開発用ダミーデータ
+├── public/
+│   └── audio/                       ← BGMや音声ファイル置き場
+├── .env
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
+├── README.md
+├── tsconfig.json
+└── docs/
+    ├── API_SPEC.md              ← 外部APIやWebhook仕様
+    ├── PROMPT_DESIGN.md         ← ラップ生成プロンプト設計
+    ├── SETUP_GUIDE.md           ← 環境構築マニュアル
+    ├── DEPLOY.md                ← デプロイ手順
+    ├── DB_SCHEMA.md             ← スキーマ図やモデルの説明
+    └── TEAM_RULES.md            ← Gitの運用ルール・コミュニケーション
 ```
 
 ## 📋 環境変数設定
@@ -94,6 +132,9 @@ npm run type-check
 
 # デプロイ
 npm run build
+
+# Docker環境
+docker-compose up -d
 ```
 
 ## 📡 API 仕様
@@ -101,7 +142,7 @@ npm run build
 ### Webhook エンドポイント
 
 ```
-POST /api/webhook
+POST /api/line/webhook
 Content-Type: application/json
 
 # LINE Messaging APIからのWebhook受信
@@ -154,8 +195,10 @@ npm run test
   - LINE Messaging API
   - OpenAI API
   - 韻辞典 API (調査中)
+  - Google TTS API (音声合成)
 - **デプロイ**: Vercel
 - **データベースホスティング**: Railway/PlanetScale
+- **コンテナ**: Docker + Docker Compose
 
 ## 🚧 開発進捗
 
@@ -177,6 +220,16 @@ npm run test
 2. **コミット**: 英語 or 日本語 OK（統一する）
 3. **PR**: 最低 1 人のレビュー必須
 4. **定期 MTG**: 週 2 回、進捗共有
+
+詳細は [docs/TEAM_RULES.md](docs/TEAM_RULES.md) を参照
+
+## 📚 ドキュメント
+
+- [API 仕様書](docs/API_SPEC.md)
+- [環境構築ガイド](docs/SETUP_GUIDE.md)
+- [デプロイ手順](docs/DEPLOY.md)
+- [DB 設計書](docs/DB_SCHEMA.md)
+- [プロンプト設計](docs/PROMPT_DESIGN.md)
 
 ## 📚 参考資料
 
