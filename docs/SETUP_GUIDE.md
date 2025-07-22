@@ -1,11 +1,20 @@
-## **開発環境の起動手順**
+## **🛠️ 開発環境セットアップ＆起動手順**
 
-| 作業 | 担当 |
-| --- | --- |
-| Docker起動 | 各自 |
-| フロント起動（Next.js） | 必要に応じて各自 |
-| ngrok起動・Webhook設定 | ✅ 私が対応 |
-| ngrok URLの共有 | ❌ **不要です！** |
+## ✅ 前提準備（初回のみ）
+まずはプロジェクトをクローンして、環境を整えましょう！
+```
+git clone https://github.com/ms-engineer-bc25-06/TeamA_Section8.git
+
+cd TeamA_Section8
+
+npm install
+
+// .envに必要な環境変数を記入してルート直下に配置する。
+
+npm run dev
+
+```
+
 
 ## 🐳 Dockerコンテナの起動
 
