@@ -67,7 +67,7 @@ ngrok config add-authtoken <your_token>
 ### 🚀 [毎回] ngrok起動（担当：なみ）
 
 ```bash
-ngrok http 8000
+ngrok http 3000
 ```
 
 > 8000 はWebhookサーバがListenしているポート発行されたURLをLINE Developerコンソールに貼り付ける
