@@ -1,0 +1,1 @@
+// 音声合成API処理（Google TTSなど）
