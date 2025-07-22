@@ -12,14 +12,7 @@
 
 ### セットアップ
 
-```bash
-git clone https://github.com/ms-engineer-bc25-06/TeamA_Section8.git
-cd TeamA_Section8
-npm install
-cp .env.example .env.local
-# .env.localに必要な環境変数を設定
-npm run dev
-```
+詳細はSETUP_GUIDE.mdに記載してあります。
 
 ## 📁 ディレクトリ構成
 
@@ -61,6 +54,9 @@ project-root/
 
 ## 📋 環境変数設定
 
+例として.env.exampleを用意してあります。
+各自のローカルで.envファイルを用意して、中に秘密の情報を書き込んで使ってください。
+
 ```env
 # LINE Messaging API
 LINE_CHANNEL_ACCESS_TOKEN=your_line_token
@@ -98,23 +94,7 @@ LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 
 ## 🗃 データベース設計
 
-```sql
--- ユーザー管理
-CREATE TABLE users (
-  id VARCHAR(255) PRIMARY KEY,  -- LINE user_id
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- メッセージ履歴
-CREATE TABLE messages (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id VARCHAR(255),
-  input_text TEXT,
-  generated_rap TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
+DB_SCHEMA.mdに詳細が記載してあります。
 
 ## 🔧 開発コマンド
 
@@ -139,31 +119,7 @@ docker compose up -d
 
 ## 📡 API 仕様
 
-### Webhook エンドポイント
-
-```
-POST /api/line/webhook
-Content-Type: application/json
-
-# LINE Messaging APIからのWebhook受信
-```
-
-### 内部 API
-
-```typescript
-// ラップ生成
-POST /api/generate-rap
-{
-  "userInput": "疲れた...",
-  "userId": "line_user_id"
-}
-
-// 韻検索
-GET /api/rhyme?word=疲れた
-
-// 履歴取得
-GET /api/history?userId=line_user_id
-```
+API_SPEC.mdに詳細を記載してあります。
 
 ## 🧪 テスト
 
@@ -211,12 +167,7 @@ docker compose --profile dev up -d
 
 ## 🤝 開発ルール
 
-1. **ブランチ戦略**: `main` ← `develop` ← `feature/xxx`
-2. **コミット**: 英語 or 日本語 OK（統一する）
-3. **PR**: 最低 1 人のレビュー必須
-4. **定期 MTG**: 週 2 回、進捗共有
-
-詳細は [docs/TEAM_RULES.md](docs/TEAM_RULES.md) を参照
+詳細はTEAM_RULES.mdに記載してあります。
 
 ## 📚 ドキュメント
 

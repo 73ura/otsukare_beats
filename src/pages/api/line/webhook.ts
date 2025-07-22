@@ -7,7 +7,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    console.log("Received LINE webhook event:", req.body);
+    console.log("Webhook受信! リクエストボディ:", req.body);
     // ここにLINEメッセージ処理を書く
     res.status(200).json({ message: "OK" });
   } else {
