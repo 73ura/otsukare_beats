@@ -1,0 +1,48 @@
+services:
+  # MySQL データベース
+  mysql:
+    image: mysql:8.0
+    container_name: rap_bot_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rap_bot
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+
+  # Next.js アプリケーション
+  app:
+    build: .
+    container_name: rap_bot_app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    environment:
+      DATABASE_URL: mysql://app_user:app_password@mysql:3306/rap_bot
+      NODE_ENV: development
+      # 環境変数はオプション（.envから読み込み）
+      LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN:-}
+      LINE_CHANNEL_SECRET: ${LINE_CHANNEL_SECRET:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+    command: npm run dev
+
+volumes:
+  mysql_data:
+
+networks:
+  rap_bot_network:
+    driver: bridge

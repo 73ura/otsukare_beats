@@ -38,4 +38,6 @@ dist/
 build/
 
 # テスト関連（coverageなど）
-coverage/
+coverage/node_modules/
+.next/
+.env.local

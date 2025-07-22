@@ -134,7 +134,7 @@ npm run type-check
 npm run build
 
 # Docker環境
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 📡 API 仕様
@@ -171,19 +171,14 @@ GET /api/history?userId=line_user_id
 # 単体テスト
 npm run test
 
-# LINE Webhook テスト用JSON
-{
-  "events": [{
-    "type": "message",
-    "message": {
-      "type": "text",
-      "text": "疲れた..."
-    },
-    "source": {
-      "userId": "test_user_id"
-    }
-  }]
-}
+# Docker環境起動
+docker compose up -d
+
+# MySQL単体起動
+docker compose up mysql -d
+
+# 開発環境（Prisma Studio含む）
+docker compose --profile dev up -d
 ```
 
 ## 📦 使用技術
