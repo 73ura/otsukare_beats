@@ -119,31 +119,7 @@ docker compose up -d
 
 ## 📡 API 仕様
 
-### Webhook エンドポイント
-
-```
-POST /api/line/webhook
-Content-Type: application/json
-
-# LINE Messaging APIからのWebhook受信
-```
-
-### 内部 API
-
-```typescript
-// ラップ生成
-POST /api/generate-rap
-{
-  "userInput": "疲れた...",
-  "userId": "line_user_id"
-}
-
-// 韻検索
-GET /api/rhyme?word=疲れた
-
-// 履歴取得
-GET /api/history?userId=line_user_id
-```
+API_SPEC.mdに詳細を記載してあります。
 
 ## 🧪 テスト
 
@@ -191,12 +167,7 @@ docker compose --profile dev up -d
 
 ## 🤝 開発ルール
 
-1. **ブランチ戦略**: `main` ← `develop` ← `feature/xxx`
-2. **コミット**: 英語 or 日本語 OK（統一する）
-3. **PR**: 最低 1 人のレビュー必須
-4. **定期 MTG**: 週 2 回、進捗共有
-
-詳細は [docs/TEAM_RULES.md](docs/TEAM_RULES.md) を参照
+詳細はTEAM_RULES.mdに記載してあります。
 
 ## 📚 ドキュメント
 
