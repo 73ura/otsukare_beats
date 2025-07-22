@@ -40,6 +40,20 @@ services:
     restart: unless-stopped
     command: npm run dev
 
+  # VOICEVOX音声合成エンジン
+  voicevox:
+    image: voicevox/voicevox_engine:latest
+    container_name: rap_bot_voicevox
+    ports:
+      - "50021:50021"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+
 volumes:
   mysql_data:
 
