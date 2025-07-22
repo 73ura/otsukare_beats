@@ -11,6 +11,6 @@ export default async function handler(
     // ここにLINEメッセージ処理を書く
     res.status(200).json({ message: "OK" });
   } else {
-    res.status(405).end(); // Method Not Allowed
+    res.status(405).end(); 
   }
 }

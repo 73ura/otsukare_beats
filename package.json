@@ -1,0 +1,25 @@
+{
+  "name": "teama_section8",
+  "version": "1.0.0",
+  "description": "ユーザーの一言や愚痴から、即興ラップ風の応援メッセージを生成する LINE ボット",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+  "build": "next build",
+  "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ms-engineer-bc25-06/TeamA_Section8.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ms-engineer-bc25-06/TeamA_Section8/issues"
+  },
+  "homepage": "https://github.com/ms-engineer-bc25-06/TeamA_Section8#readme"
+}
