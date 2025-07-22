@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",                           // 出力するJavaScriptのバージョン
+    "lib": ["dom", "dom.iterable", "esnext"],  // 利用する型定義
+    "allowJs": true,                           // JSファイルも扱う
+    "skipLibCheck": true,                      // ライブラリの型チェックをスキップ
+    "strict": true,                            // 厳格な型チェック
+    "forceConsistentCasingInFileNames": true,  // ファイル名の大文字小文字を厳密に
+    "noEmit": true,                            // jsファイルを出力しない（Next.js推奨）
+    "esModuleInterop": true,                   // ESモジュール互換
+    "module": "esnext",                        // モジュールシステム
+    "moduleResolution": "node",                // モジュール解決方法
+    "resolveJsonModule": true,                 // JSONインポート許可
+    "isolatedModules": true,                   // 各ファイルを個別にトランスパイル
+    "jsx": "preserve",                         // JSXの扱い
+    "incremental": true                        // 増分ビルド
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"], // 対象ファイル
+  "exclude": ["node_modules"]                           // 除外ファイル
+}
+  

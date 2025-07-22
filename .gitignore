@@ -1,0 +1,41 @@
+# Node.jsの標準
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Next.jsのビルド成果物
+.next/
+out/
+
+# 環境変数ファイル（APIキーなど秘密情報）
+.env
+.env.local
+.env.*.local
+
+# Prismaの生成ファイル（もしあれば）
+prisma/migrations/
+prisma/dev.db
+
+# ログファイル
+logs
+*.log
+*.log.*
+
+# Docker関連（一時ファイルやコンテナ関連）
+docker-compose.override.yml
+*.pid
+*.seed.ts
+
+# VSCodeの設定ファイル（個人環境の設定）
+.vscode/
+
+# OSが作るファイル
+.DS_Store
+Thumbs.db
+
+# TypeScriptのビルド成果物（もし生成してるなら）
+dist/
+build/
+
+# テスト関連（coverageなど）
+coverage/
