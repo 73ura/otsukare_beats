@@ -15,7 +15,7 @@
     "jsx": "preserve",                         // JSXの扱い
     "incremental": true                        // 増分ビルド
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"], // 対象ファイル
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "next.config.js"], // 対象ファイル
   "exclude": ["node_modules"]                           // 除外ファイル
 }
   
