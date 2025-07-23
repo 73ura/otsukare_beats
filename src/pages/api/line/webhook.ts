@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Client, WebhookEvent } from '@line/bot-sdk';
 import { validateSignature } from '@line/bot-sdk';
+import { generateVoiceFile } from '../../../lib/voicevox';
 
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
@@ -55,11 +56,26 @@ export default async function handler(
         if (event.type === 'message' && event.message.type === 'text') {
           try {
             console.log("メッセージ送信開始:", event.replyToken);
-            await client.replyMessage(event.replyToken, {
-              type: 'text',
-              text: 'Yo!受け取ったよ〜',
+            
+            // 音声生成
+            const userMessage = event.message.text;
+            console.log("ユーザーメッセージ:", userMessage);
+            
+            const fileName = await generateVoiceFile({
+              text: userMessage,
+              speaker: 3
             });
-            console.log("メッセージ送信成功");
+            
+            console.log("音声ファイル生成完了:", fileName);
+            
+            // LINEに音声メッセージを送信
+            await client.replyMessage(event.replyToken, {
+              type: 'audio',
+              originalContentUrl: `https://7ebc311b75c1.ngrok-free.app/audio/${fileName}`,
+              duration: 10000 // 10秒に短縮
+            });
+            
+            console.log("音声メッセージ送信成功");
           } catch (replyError) {
             console.error("メッセージ送信エラー:", replyError);
             throw replyError;

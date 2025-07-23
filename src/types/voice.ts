@@ -1,4 +1,15 @@
-// 音声生成関連の型定義
+// 音声生成APIの型定義
+
+export interface VoicevoxAudioQuery {
+  speedScale: number;
+  pitchScale: number;
+  volumeScale: number;
+  prePhonemeLength: number;
+  postPhonemeLength: number;
+  outputSamplingRate: number;
+  outputStereo: boolean;
+  kana: string;
+}
 
 export interface VoiceGenerationRequest {
   text: string;
@@ -11,23 +22,9 @@ export interface VoiceGenerationRequest {
 export interface VoiceGenerationResponse {
   success: boolean;
   audioUrl?: string;
-  audioPath?: string;
   fileName?: string;
   message: string;
   error?: string;
-}
-
-export interface VoicevoxAudioQuery {
-  accent_phrases: AccentPhrase[];
-  speedScale: number;
-  pitchScale: number;
-  intonationScale: number;
-  volumeScale: number;
-  prePhonemeLength: number;
-  postPhonemeLength: number;
-  outputSamplingRate: number;
-  outputStereo: boolean;
-  kana: string;
 }
 
 export interface AccentPhrase {
