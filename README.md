@@ -25,9 +25,7 @@ project-root/
 │   │           └── webhook.ts       ← LINEからのWebhook受信
 │   ├── lib/
 │   │   ├── openai.ts                ← OpenAIラップ生成処理
-│   │   ├── rhyme.ts                 ← 韻辞典API連携ロジック
-│   │   ├── emotion.ts               ← 感情分析用ロジック
-│   │   ├── tts.ts                   ← 音声合成API処理（Google TTSなど）
+│   │   ├── voicevox.ts              ← VOICEVOX音声合成処理
 │   │   └── logger.ts                ← 共通ログ処理
 │   └── utils/
 │       ├── constants.ts             ← 定数・共通メッセージ
