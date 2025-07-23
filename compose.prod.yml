@@ -1,0 +1,58 @@
+services:
+  # MySQL データベース（本番環境）
+  mysql:
+    image: mysql:8.0
+    container_name: rap_bot_mysql_prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secure_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rap_bot_prod}
+      MYSQL_USER: ${MYSQL_USER:-rap_bot_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secure_app_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+
+  # Next.js アプリケーション（本番環境）
+  app:
+    build: .
+    container_name: rap_bot_app_prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+      - voicevox
+    environment:
+      DATABASE_URL: mysql://${MYSQL_USER:-rap_bot_user}:${MYSQL_PASSWORD:-secure_app_password}@mysql:3306/${MYSQL_DATABASE:-rap_bot_prod}
+      NODE_ENV: production
+      LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN}
+      LINE_CHANNEL_SECRET: ${LINE_CHANNEL_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+    command: npm run start
+
+  # VOICEVOX音声合成エンジン（本番環境）
+  voicevox:
+    image: voicevox/voicevox_engine:latest
+    container_name: rap_bot_voicevox_prod
+    ports:
+      - "50021:50021"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - rap_bot_network
+    restart: unless-stopped
+
+volumes:
+  mysql_prod_data:
+
+networks:
+  rap_bot_network:
+    driver: bridge
