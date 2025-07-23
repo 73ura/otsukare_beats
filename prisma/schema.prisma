@@ -1,6 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,36 +12,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id         String   @id @default(uuid())
-  lineUserId String   @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  messages Message[]
-
-  @@map("users")
+model sqlusers {
+  id          Int       @id @default(autoincrement())
+  line_user_id String    @unique
+  created_at  DateTime  @default(now())
+  messages    messages[]
 }
 
-model Message {
+model messages {
+  id             Int      @id @default(autoincrement())
+  user           sqlusers @relation(fields: [user_id], references: [id])
+  user_id        Int
+  input_text     String
+  generated_rap  String
+  created_at     DateTime @default(now())
+}
+
+model rap_patterns {
   id           Int      @id @default(autoincrement())
-  userId       String
-  inputText    String   @db.Text
-  generatedRap String?  @db.Text
-  audioUrl     String?
-  createdAt    DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("messages")
-}
-
-model RapPattern {
-  id          Int      @id @default(autoincrement())
-  pattern     String   @db.Text
-  successRate Float    @default(0.0)
-  usageCount  Int      @default(0)
-  createdAt   DateTime @default(now())
-
-  @@map("rap_patterns")
+  pattern      String
+  success_rate Float?
+  usage_count  Int      @default(0)
 }
