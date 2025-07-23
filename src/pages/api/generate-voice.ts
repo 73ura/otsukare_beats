@@ -1,50 +1,44 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import {
-  VoiceGenerationRequest,
-  VoiceGenerationResponse,
-} from "../../types/voice";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { generateVoiceFile } from "../../lib/voicevox";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<VoiceGenerationResponse>
+  res: NextApiResponse
 ) {
-  // POSTメソッドのみ許可
   if (req.method !== "POST") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed. Use POST.",
-    });
+    res.status(405).json({ success: false, message: "Method not allowed" });
+    return;
   }
 
   try {
-    // リクエストボディの検証
-    const { text, speaker, speed, pitch, volume }: VoiceGenerationRequest =
-      req.body;
+    const { text, speaker, speed, pitch, volume } = req.body;
 
     // バリデーション
     if (!text || typeof text !== "string") {
-      return res.status(400).json({
-        success: false,
-        message: "Text is required and must be a string.",
+      res.status(400).json({ 
+        success: false, 
+        message: "Text is required and must be a string" 
       });
+      return;
     }
 
-    if (!speaker || typeof speaker !== "number") {
-      return res.status(400).json({
-        success: false,
-        message: "Speaker ID is required and must be a number.",
+    if (!speaker || typeof speaker !== "number" || speaker < 1 || speaker > 109) {
+      res.status(400).json({ 
+        success: false, 
+        message: "Speaker must be a number between 1 and 109" 
       });
+      return;
     }
 
     if (text.length > 500) {
-      return res.status(400).json({
-        success: false,
-        message: "Text must be 500 characters or less.",
+      res.status(400).json({ 
+        success: false, 
+        message: "Text must be 500 characters or less" 
       });
+      return;
     }
 
-    // 音声ファイル生成
+    // 音声生成
     const fileName = await generateVoiceFile({
       text,
       speaker,
@@ -53,22 +47,19 @@ export default async function handler(
       volume: volume || 1.0,
     });
 
-    // 成功レスポンス
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       audioUrl: `/audio/${fileName}`,
-      audioPath: `public/audio/${fileName}`,
-      fileName,
-      message: "Voice generated successfully",
+      fileName: fileName,
+      message: "Voice generated successfully"
     });
-  } catch (error) {
-    console.error("Error in generate-voice API:", error);
 
-    // エラーレスポンス
-    return res.status(500).json({
+  } catch (error) {
+    console.error("Voice generation error:", error);
+    res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Voice generation failed",
+      error: error instanceof Error ? error.message : "Unknown error"
     });
   }
 }
