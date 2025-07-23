@@ -56,29 +56,44 @@ export default async function handler(
         if (event.type === 'message' && event.message.type === 'text') {
           try {
             console.log("メッセージ送信開始:", event.replyToken);
-            
+
             // 音声生成
             const userMessage = event.message.text;
             console.log("ユーザーメッセージ:", userMessage);
-            
-            const fileName = await generateVoiceFile({
-              text: userMessage,
-              speaker: 3
-            });
-            
-            console.log("音声ファイル生成完了:", fileName);
-            
+
+            let fileName: string | null = null;
+            try {
+              fileName = await generateVoiceFile({
+                text: userMessage,
+                speaker: 3
+              });
+              console.log("音声ファイル生成完了:", fileName);
+            } catch (voiceError) {
+              console.error("音声生成エラー:", voiceError);
+              // 音声生成失敗時はテキストで返信
+              await client.replyMessage(event.replyToken, {
+                type: 'text',
+                text: '音の魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！'
+              });
+              return;
+            }
+
             // LINEに音声メッセージを送信
             await client.replyMessage(event.replyToken, {
               type: 'audio',
               originalContentUrl: `https://7ebc311b75c1.ngrok-free.app/audio/${fileName}`,
-              duration: 10000 // 10秒に短縮
+              duration: 10000 // 10秒（推定）
             });
-            
+
             console.log("音声メッセージ送信成功");
+            throw new Error("テスト用エラー");
           } catch (replyError) {
             console.error("メッセージ送信エラー:", replyError);
-            throw replyError;
+            // 予期しない例外時もテキストで返信
+            await client.replyMessage(event.replyToken, {
+              type: 'text',
+              text: 'ちょっとトラブル、でも大丈夫！もう一回 Try、君ならゼッタイできる!'
+            });
           }
         }
       })
