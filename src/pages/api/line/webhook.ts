@@ -73,6 +73,16 @@ export default async function handler(
             const rap = await generateRap(userMessage);
             console.log("生成されたラップ:", rap);
 
+            // ラップ生成が失敗した場合の処理
+            if (!rap) {
+              console.log("ラップ生成失敗");
+              await client.replyMessage(event.replyToken, {
+                type: "text",
+                text: "ラップの魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！",
+              });
+              return;
+            }
+
             // 音声生成
             const fileName = await generateVoiceFile({
               text: rap,
@@ -81,10 +91,11 @@ export default async function handler(
             console.log("音声ファイル生成完了:", fileName);
 
             // LINEに音声メッセージを送信
+            const baseUrl = process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
             await client.replyMessage(event.replyToken, {
               type: "audio",
-              originalContentUrl: `https://7ebc311b75c1.ngrok-free.app/audio/${fileName}`,
-              duration: 10000, // 10秒（推定）
+              originalContentUrl: `${baseUrl}/audio/${fileName}`,
+              duration: 15000, // 15秒（ラップの長さに合わせて調整）
             });
 
             console.log("音声メッセージ送信成功");
@@ -97,14 +108,7 @@ export default async function handler(
               type: "text",
               text: "音の魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！",
             });
-            return;
           }
-
-          // 予期しない例外時もテキストで返信
-          await client.replyMessage(event.replyToken, {
-            type: "text",
-            text: "ちょっとトラブル、でも大丈夫！もう一回 Try、君ならゼッタイできる!",
-          });
         }
       })
     );
