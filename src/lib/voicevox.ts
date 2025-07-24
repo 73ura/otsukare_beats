@@ -3,7 +3,9 @@ import path from "path";
 import { VoicevoxAudioQuery, VoiceGenerationRequest } from "../types/voice";
 
 // VOICEVOX API のベースURL（環境変数から取得、デフォルトはlocalhost:50021）
+
 const VOICEVOX_BASE_URL = process.env.VOICEVOX_BASE_URL || "http://localhost:50021";
+
 
 /**
  * VOICEVOX APIでテキストから音声クエリを生成

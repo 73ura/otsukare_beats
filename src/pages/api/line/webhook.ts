@@ -1,9 +1,11 @@
 // src/pages/api/line/webhook.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+
 import { Client, WebhookEvent } from "@line/bot-sdk";
 import { generateRap } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
+
 
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
@@ -16,7 +18,9 @@ const client = new Client(config);
 export const config_api = {
   api: {
     bodyParser: {
+
       sizeLimit: "1mb",
+
     },
   },
 };
@@ -35,6 +39,7 @@ export default async function handler(
 
   try {
     // 署名検証（body-parser有効の場合）
+
     const signature = req.headers["x-line-signature"];
     console.log("署名:", signature ? "存在" : "なし");
 
@@ -48,6 +53,7 @@ export default async function handler(
     ) {
       console.log("署名検証失敗");
       res.status(401).end("署名検証失敗");
+
       return;
     }
     console.log("署名検証成功");
@@ -56,6 +62,7 @@ export default async function handler(
     console.log("Webhook受信! リクエストボディ:", req.body);
 
     await Promise.all(
+
       events.map(async event => {
         if (event.type === "message" && event.message.type === "text") {
           const userMessage = event.message.text;
@@ -101,6 +108,7 @@ export default async function handler(
         }
       })
     );
+
 
     console.log("=== Webhook処理完了 ===");
     res.status(200).end();

@@ -12,7 +12,7 @@
 
 ### セットアップ
 
-詳細はSETUP_GUIDE.mdに記載してあります。
+詳細は SETUP_GUIDE.md に記載してあります。
 
 ## 📁 ディレクトリ構成
 
@@ -25,9 +25,7 @@ project-root/
 │   │           └── webhook.ts       ← LINEからのWebhook受信
 │   ├── lib/
 │   │   ├── openai.ts                ← OpenAIラップ生成処理
-│   │   ├── rhyme.ts                 ← 韻辞典API連携ロジック
-│   │   ├── emotion.ts               ← 感情分析用ロジック
-│   │   ├── tts.ts                   ← 音声合成API処理（Google TTSなど）
+│   │   ├── voicevox.ts              ← VOICEVOX音声合成処理
 │   │   └── logger.ts                ← 共通ログ処理
 │   └── utils/
 │       ├── constants.ts             ← 定数・共通メッセージ
@@ -54,8 +52,8 @@ project-root/
 
 ## 📋 環境変数設定
 
-例として.env.exampleを用意してあります。
-各自のローカルで.envファイルを用意して、中に秘密の情報を書き込んで使ってください。
+例として.env.example を用意してあります。
+各自のローカルで.env ファイルを用意して、中に秘密の情報を書き込んで使ってください。
 
 ```env
 # LINE Messaging API
@@ -94,7 +92,7 @@ LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 
 ## 🗃 データベース設計
 
-DB_SCHEMA.mdに詳細が記載してあります。
+DB_SCHEMA.md に詳細が記載してあります。
 
 ## 🔧 開発コマンド
 
@@ -119,7 +117,14 @@ docker compose up -d
 
 ## 📡 API 仕様
 
-API_SPEC.mdに詳細を記載してあります。
+API 仕様の詳細は [docs/API_SPEC.md](docs/API_SPEC.md) に記載しています。
+
+### 主要 API
+
+- **Webhook**: LINE Messaging API 受信
+- **ラップ生成**: OpenAI 統合
+- **音声生成**: VOICEVOX 統合 ← 新規追加
+- **履歴管理**: データベース操作
 
 ## 🧪 テスト
 
@@ -167,7 +172,7 @@ docker compose --profile dev up -d
 
 ## 🤝 開発ルール
 
-詳細はTEAM_RULES.mdに記載してあります。
+詳細は TEAM_RULES.md に記載してあります。
 
 ## 📚 ドキュメント
 
@@ -176,6 +181,7 @@ docker compose --profile dev up -d
 - [デプロイ手順](docs/DEPLOY.md)
 - [DB 設計書](docs/DB_SCHEMA.md)
 - [プロンプト設計](docs/PROMPT_DESIGN.md)
+- [音声生成 API 仕様](docs/API_VOICE.md)
 
 ## 📚 参考資料
 
