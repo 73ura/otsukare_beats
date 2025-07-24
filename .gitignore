@@ -42,4 +42,8 @@ coverage/node_modules/
 .next/
 .env.local
 
+# ログファイル
+logs
+*.log
+*.log.*
 

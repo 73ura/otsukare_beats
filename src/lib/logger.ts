@@ -10,7 +10,15 @@ export const logger = createLogger({
     })
   ),
   transports: [
-    new transports.File({ filename: "logs/error.log", level: "error" }), // エラーログ
-    new transports.File({ filename: "logs/combined.log" }), // 全てのログ
+    // エラーログ
+    new transports.File({
+      filename: "logs/error.log",
+      level: "error",
+      options: { encoding: "utf8" },
+    }),
+    // 全てのログ
+    new transports.File({
+      filename: "logs/combined.log",
+    }),
   ],
 });
