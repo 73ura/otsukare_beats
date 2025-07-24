@@ -1,11 +1,9 @@
-// src/pages/api/line/webhook.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Client, WebhookEvent } from "@line/bot-sdk";
-import { generateRap } from "../../../lib/openai";
+import { generateRap, RAP_SYSTEM_PROMPT, RAP_GREETING_PROMPT } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
-
 
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
@@ -18,9 +16,7 @@ const client = new Client(config);
 export const config_api = {
   api: {
     bodyParser: {
-
       sizeLimit: "1mb",
-
     },
   },
 };
@@ -47,13 +43,17 @@ export default async function handler(
     const bodyString = JSON.stringify(req.body);
     const bodyBuffer = Buffer.from(bodyString);
 
-    if (
+    // 学習用：テストユーザーIDの場合は署名検証スキップ
+    const isTestUser = req.body.events?.[0]?.source?.userId === "test";
+
+    if (isTestUser) {
+      console.log("🔧 学習用テスト: 署名検証スキップ");
+    } else if (
       typeof signature !== "string" ||
       !validateSignature(bodyBuffer, config.channelSecret, signature)
     ) {
       console.log("署名検証失敗");
       res.status(401).end("署名検証失敗");
-
       return;
     }
     console.log("署名検証成功");
@@ -62,48 +62,114 @@ export default async function handler(
     console.log("Webhook受信! リクエストボディ:", req.body);
 
     await Promise.all(
-
       events.map(async event => {
         if (event.type === "message" && event.message.type === "text") {
           const userMessage = event.message.text;
+          const lineUserId = event.source?.userId || "test";
           console.log("ユーザーメッセージ:", userMessage);
 
+          // 直近メッセージ取得
+          let messages = [];
+          let lastMessageTime = null;
           try {
-            //ラップ生成
-            const rap = await generateRap(userMessage);
-            console.log("生成されたラップ:", rap);
+            const res = await fetch(
+              `http://localhost:3000/api/messages?line_user_id=${lineUserId}`
+            );
+            if (res.ok) {
+              messages = await res.json();
+              if (messages.length > 0) {
+                lastMessageTime = new Date(messages[0].created_at);
+              }
+            }
+          } catch (e) {
+            console.error("メッセージ履歴取得失敗", e);
+          }
 
-            // ラップ生成が失敗した場合の処理
+          const now = new Date();
+          let greeted = false;
+          if (
+            lastMessageTime &&
+            now.getTime() - lastMessageTime.getTime() > 60 * 60 * 1000
+          ) {
+            // 1時間以上空いていた場合、過去対話履歴をAIに渡して挨拶ラップ生成
+            const history = messages
+              .slice(0, 3)
+              .reverse()
+              .map(
+                (m: any, i: number) =>
+                  `【${i + 1}回前】ユーザー: ${m.input_text}\nラップ: ${m.generated_rap}`
+              )
+              .join("\n");
+            const greetingPrompt = RAP_GREETING_PROMPT.replace("(履歴をここに挿入)", history);
+            const greetingRap = await generateRap(greetingPrompt, RAP_GREETING_PROMPT);
+            if (greetingRap) {
+              // 音声生成
+              const fileName = await generateVoiceFile({
+                text: greetingRap,
+                speaker: 3,
+              });
+              const baseUrl =
+                process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+              // 音声で挨拶ラップ返信
+              await client.replyMessage(event.replyToken, {
+                type: "audio",
+                originalContentUrl: `${baseUrl}/audio/${fileName}`,
+                duration: 15000,
+              });
+              // DB保存
+              try {
+                await fetch(`http://localhost:3000/api/messages`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    input_text: "(システム挨拶)",
+                    generated_rap: greetingRap,
+                  }),
+                });
+              } catch (e) {}
+              greeted = true;
+              // 続けてテキストで促し
+              await client.pushMessage(lineUserId, {
+                type: "text",
+                text: "ユーザーのつぶやきをラップに昇華させるYo！好きなことを送ってみてYo！",
+              });
+              // ここでreturnすると通常フローに進まないので、以降も続行
+            }
+          }
+
+          // 通常のラップ生成フロー
+          try {
+            const rap = await generateRap(userMessage, RAP_SYSTEM_PROMPT);
+            console.log("生成されたラップ:", rap);
             if (!rap) {
-              console.log("ラップ生成失敗");
               await client.replyMessage(event.replyToken, {
                 type: "text",
                 text: "ラップの魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！",
               });
               return;
             }
-
-            // 音声生成
-            const fileName = await generateVoiceFile({
-              text: rap,
-              speaker: 3,
-            });
-            console.log("音声ファイル生成完了:", fileName);
-
-            // LINEに音声メッセージを送信
-            const baseUrl = process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+            const fileName = await generateVoiceFile({ text: rap, speaker: 3 });
+            const baseUrl =
+              process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
             await client.replyMessage(event.replyToken, {
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,
-              duration: 15000, // 15秒（ラップの長さに合わせて調整）
+              duration: 15000,
             });
-
-            console.log("音声メッセージ送信成功");
-            //throw new Error("テスト用エラー");
+            // DB保存
+            try {
+              await fetch(`http://localhost:3000/api/messages`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  line_user_id: lineUserId,
+                  input_text: userMessage,
+                  generated_rap: rap,
+                }),
+              });
+            } catch (e) {}
           } catch (replyError) {
-            console.error("メッセージ送信エラー:", replyError);
-
-            // 音声生成失敗時はテキストで返信
             await client.replyMessage(event.replyToken, {
               type: "text",
               text: "音の魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！",
@@ -112,7 +178,6 @@ export default async function handler(
         }
       })
     );
-
 
     console.log("=== Webhook処理完了 ===");
     res.status(200).end();
