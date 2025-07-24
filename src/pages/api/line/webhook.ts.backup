@@ -1,9 +1,11 @@
+// src/pages/api/line/webhook.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Client, WebhookEvent } from "@line/bot-sdk";
 import { generateRap } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
+
 
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
@@ -16,7 +18,9 @@ const client = new Client(config);
 export const config_api = {
   api: {
     bodyParser: {
+
       sizeLimit: "1mb",
+
     },
   },
 };
@@ -43,17 +47,13 @@ export default async function handler(
     const bodyString = JSON.stringify(req.body);
     const bodyBuffer = Buffer.from(bodyString);
 
-    // 学習用：テストユーザーIDの場合は署名検証スキップ
-    const isTestUser = req.body.events?.[0]?.source?.userId === "test";
-
-    if (isTestUser) {
-      console.log("🔧 学習用テスト: 署名検証スキップ");
-    } else if (
+    if (
       typeof signature !== "string" ||
       !validateSignature(bodyBuffer, config.channelSecret, signature)
     ) {
       console.log("署名検証失敗");
       res.status(401).end("署名検証失敗");
+
       return;
     }
     console.log("署名検証成功");
@@ -62,6 +62,7 @@ export default async function handler(
     console.log("Webhook受信! リクエストボディ:", req.body);
 
     await Promise.all(
+
       events.map(async event => {
         if (event.type === "message" && event.message.type === "text") {
           const userMessage = event.message.text;
@@ -88,42 +89,9 @@ export default async function handler(
               speaker: 3,
             });
             console.log("音声ファイル生成完了:", fileName);
-            // 実際のDB保存処理
-            try {
-              console.log("=== 実際のDB保存開始 ===");
-
-              // Person CのメッセージAPIを呼び出し
-              const saveResponse = await fetch(
-                `http://localhost:3000/api/messages`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    line_user_id: event.source?.userId || "test",
-                    input_text: userMessage,
-                    generated_rap: rap,
-                  }),
-                }
-              );
-
-              if (saveResponse.ok) {
-                const savedMessage = await saveResponse.json();
-                console.log("DB保存成功! メッセージID:", savedMessage.id);
-              } else {
-                const errorText = await saveResponse.text();
-                console.error("DB保存失敗:", saveResponse.status, errorText);
-              }
-            } catch (dbError) {
-              console.error("DB保存エラー:", dbError);
-            }
-
-            console.log("=== DB保存処理完了 ===");
 
             // LINEに音声メッセージを送信
-            const baseUrl =
-              process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+            const baseUrl = process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
             await client.replyMessage(event.replyToken, {
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,
@@ -144,6 +112,7 @@ export default async function handler(
         }
       })
     );
+
 
     console.log("=== Webhook処理完了 ===");
     res.status(200).end();
