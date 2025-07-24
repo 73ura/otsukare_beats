@@ -6,6 +6,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+//通常のフリースタイルラップ生成
 export async function generateRap(prompt: string) {
   try {
     const chatCompletion = await openai.chat.completions.create({
@@ -38,4 +39,26 @@ export async function generateRap(prompt: string) {
     console.error("OpenAI API エラー:", error);
     return null;
   }
+}
+
+//前回のコメント履歴から一言ラップを生成
+export async function generateCommentRap(message: string) {
+  const chatCompletion = await openai.chat.completions.create({
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: `あなたはユーザーの状態に寄り添うラップを作るラッパーです。
+        ・受け取ったメッセージの調子を見て、
+        励ます一言ラップを30〜50文字で作成してください。
+        ・語尾やトーンを柔らかく、親しみやすく。`,
+      },
+      {
+        role: "user",
+        content: message,
+      },
+    ],
+  });
+
+  return chatCompletion.choices[0].message.content;
 }
