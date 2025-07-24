@@ -9,7 +9,7 @@ const openai = new OpenAI({
 export async function generateRap(prompt: string) {
   try {
     const chatCompletion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
       messages: [
         {
           role: "system",
