@@ -1,5 +1,4 @@
 // 共通ログ処理
-
 import { createLogger, format, transports } from "winston";
 
 export const logger = createLogger({
