@@ -87,6 +87,32 @@ NEXTAUTH_SECRET=your_secret_key
 LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 ```
 
+## 📌 アーキテクチャ図（処理フロー）
+
+````text
+ユーザー
+   │
+   ▼
+① LINEメッセージ送信
+   │
+   ▼
+LINEプラットフォーム（Messaging API）
+   │
+   └───▶ ② Webhook通知
+                 （Next.js: /api/line/webhook.ts）
+                      │
+                      ├─▶ ③ OpenAI API呼び出し
+                      │       └ 入力メッセージからラップを生成 🎤
+                      │
+                      ├─▶ ④ Voicevox で音声変換（mp3）
+                      │
+                      ├─▶ ⑤ LINE返信用メッセージ構築
+                      │
+                      └─▶ ⑥ LINE Messaging API に返信送信
+   ▼
+ユーザーのLINEにラップが届く！
+
+
 ## 👥 担当分担
 
 | 担当者   | 責任範囲                 | 主要タスク                      |
@@ -114,7 +140,7 @@ CREATE TABLE messages (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
-```
+````
 
 ## 🔧 開発コマンド
 
