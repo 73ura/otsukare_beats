@@ -249,6 +249,49 @@ npm run test
 
 詳細は [docs/TEAM_RULES.md](docs/TEAM_RULES.md) を参照
 
+## ✏️ コーディング規約
+
+### 📌 ファイル構成と命名
+
+- ディレクトリ名・ファイル名：すべて **kebab-case**
+  - 例: `user-profile.ts`, `generate-rap.tsx`
+- React コンポーネント：PascalCase
+  - 例: `RapCard.tsx`, `LineMessageForm.tsx`
+
+### 💡 TypeScript
+
+- 型定義は可能な限り明示的に記述
+- `any` の使用は禁止（やむを得ない場合は `// FIXME` コメントをつける）
+
+### 🧼 Lint & フォーマット
+
+- `ESLint` + `Prettier` による自動整形を導入済み
+- 保存時に自動整形がかかるように VS Code 設定推奨
+  - `.vscode/settings.json` 例：
+    ```json
+    {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    }
+    ```
+
+### 💬 コメント・ログ
+
+- 日本語または英語どちらでも OK（チーム内で統一）
+- `console.log` は開発中のみ。**本番前に削除 or logger に置換**
+- 必要な関数には JSDoc コメントをつける
+
+### 🧪 テスト
+
+- テストコードは `__tests__` ディレクトリ配下に配置
+- ファイル名に `.test.ts` / `.test.tsx` を付ける
+
+---
+
+より詳細なルールは [docs/TEAM_RULES.md](docs/TEAM_RULES.md) に記載
+
 ## 📚 ドキュメント
 
 - [API 仕様書](docs/API_SPEC.md)
