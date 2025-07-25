@@ -116,6 +116,11 @@ export default async function handler(
                 originalContentUrl: `${baseUrl}/audio/${fileName}`,
                 duration: 15000,
               });
+              // 音声ラップの後にテキストでもラップを送信
+              await client.pushMessage(lineUserId, {
+                type: "text",
+                text: greetingRap,
+              });
               // DB保存
               try {
                 await fetch(`http://localhost:3000/api/messages`, {
@@ -156,6 +161,11 @@ export default async function handler(
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,
               duration: 30000,  // 実際の音声長さ（19.157秒）
+            });
+            // 音声ラップの後にテキストでもラップを送信
+            await client.pushMessage(lineUserId, {
+              type: "text",
+              text: rap,
             });
             // DB保存
             try {
