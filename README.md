@@ -12,14 +12,7 @@
 
 ### セットアップ
 
-```bash
-git clone https://github.com/ms-engineer-bc25-06/TeamA_Section8.git
-cd TeamA_Section8
-npm install
-cp .env.example .env.local
-# .env.localに必要な環境変数を設定
-npm run dev
-```
+詳細は SETUP_GUIDE.md に記載してあります。
 
 ## 📁 ディレクトリ構成
 
@@ -32,9 +25,7 @@ project-root/
 │   │           └── webhook.ts       ← LINEからのWebhook受信
 │   ├── lib/
 │   │   ├── openai.ts                ← OpenAIラップ生成処理
-│   │   ├── rhyme.ts                 ← 韻辞典API連携ロジック
-│   │   ├── emotion.ts               ← 感情分析用ロジック
-│   │   ├── tts.ts                   ← 音声合成API処理（Google TTSなど）
+│   │   ├── voicevox.ts              ← VOICEVOX音声合成処理
 │   │   └── logger.ts                ← 共通ログ処理
 │   └── utils/
 │       ├── constants.ts             ← 定数・共通メッセージ
@@ -60,6 +51,9 @@ project-root/
 ```
 
 ## 📋 環境変数設定
+
+例として.env.example を用意してあります。
+各自のローカルで.env ファイルを用意して、中に秘密の情報を書き込んで使ってください。
 
 ```env
 # LINE Messaging API
@@ -123,7 +117,6 @@ LINEプラットフォーム（Messaging API）
 | Person D | データ管理               | 履歴保存、統計機能              |
 
 ## 🗃 データベース設計
-
 ```sql
 -- ユーザー管理
 CREATE TABLE users (
@@ -141,7 +134,6 @@ CREATE TABLE messages (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ````
-
 ## 🔧 開発コマンド
 
 ```bash
@@ -160,36 +152,19 @@ npm run type-check
 npm run build
 
 # Docker環境
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 📡 API 仕様
 
-### Webhook エンドポイント
+API 仕様の詳細は [docs/API_SPEC.md](docs/API_SPEC.md) に記載しています。
 
-```
-POST /api/line/webhook
-Content-Type: application/json
+### 主要 API
 
-# LINE Messaging APIからのWebhook受信
-```
-
-### 内部 API
-
-```typescript
-// ラップ生成
-POST /api/generate-rap
-{
-  "userInput": "疲れた...",
-  "userId": "line_user_id"
-}
-
-// 韻検索
-GET /api/rhyme?word=疲れた
-
-// 履歴取得
-GET /api/history?userId=line_user_id
-```
+- **Webhook**: LINE Messaging API 受信
+- **ラップ生成**: OpenAI 統合
+- **音声生成**: VOICEVOX 統合 ← 新規追加
+- **履歴管理**: データベース操作
 
 ## 🧪 テスト
 
@@ -197,19 +172,14 @@ GET /api/history?userId=line_user_id
 # 単体テスト
 npm run test
 
-# LINE Webhook テスト用JSON
-{
-  "events": [{
-    "type": "message",
-    "message": {
-      "type": "text",
-      "text": "疲れた..."
-    },
-    "source": {
-      "userId": "test_user_id"
-    }
-  }]
-}
+# Docker環境起動
+docker compose up -d
+
+# MySQL単体起動
+docker compose up mysql -d
+
+# 開発環境（Prisma Studio含む）
+docker compose --profile dev up -d
 ```
 
 ## 📦 使用技術
@@ -242,12 +212,7 @@ npm run test
 
 ## 🤝 開発ルール
 
-1. **ブランチ戦略**: `main` ← `develop` ← `feature/xxx`
-2. **コミット**: 英語 or 日本語 OK（統一する）
-3. **PR**: 最低 1 人のレビュー必須
-4. **定期 MTG**: 週 2 回、進捗共有
-
-詳細は [docs/TEAM_RULES.md](docs/TEAM_RULES.md) を参照
+詳細は TEAM_RULES.md に記載してあります。
 
 ## ✏️ コーディング規約
 
@@ -299,6 +264,7 @@ npm run test
 - [デプロイ手順](docs/DEPLOY.md)
 - [DB 設計書](docs/DB_SCHEMA.md)
 - [プロンプト設計](docs/PROMPT_DESIGN.md)
+- [音声生成 API 仕様](docs/API_VOICE.md)
 
 ## 📚 参考資料
 
