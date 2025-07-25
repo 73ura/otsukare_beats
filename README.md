@@ -81,6 +81,32 @@ NEXTAUTH_SECRET=your_secret_key
 LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 ```
 
+## 📌 アーキテクチャ図（処理フロー）
+
+````text
+ユーザー
+   │
+   ▼
+① LINEメッセージ送信
+   │
+   ▼
+LINEプラットフォーム（Messaging API）
+   │
+   └───▶ ② Webhook通知
+                 （Next.js: /api/line/webhook.ts）
+                      │
+                      ├─▶ ③ OpenAI API呼び出し
+                      │       └ 入力メッセージからラップを生成 🎤
+                      │
+                      ├─▶ ④ Voicevox で音声変換（mp3）
+                      │
+                      ├─▶ ⑤ LINE返信用メッセージ構築
+                      │
+                      └─▶ ⑥ LINE Messaging API に返信送信
+   ▼
+ユーザーのLINEにラップが届く！
+
+
 ## 👥 担当分担
 
 | 担当者   | 責任範囲                 | 主要タスク                      |
@@ -91,9 +117,23 @@ LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 | Person D | データ管理               | 履歴保存、統計機能              |
 
 ## 🗃 データベース設計
+```sql
+-- ユーザー管理
+CREATE TABLE users (
+  id VARCHAR(255) PRIMARY KEY,  -- LINE user_id
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-DB_SCHEMA.md に詳細が記載してあります。
-
+-- メッセージ履歴
+CREATE TABLE messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id VARCHAR(255),
+  input_text TEXT,
+  generated_rap TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+````
 ## 🔧 開発コマンド
 
 ```bash
@@ -173,6 +213,49 @@ docker compose --profile dev up -d
 ## 🤝 開発ルール
 
 詳細は TEAM_RULES.md に記載してあります。
+
+## ✏️ コーディング規約
+
+### 📌 ファイル構成と命名
+
+- ディレクトリ名・ファイル名：すべて **kebab-case**
+  - 例: `user-profile.ts`, `generate-rap.tsx`
+- React コンポーネント：PascalCase
+  - 例: `RapCard.tsx`, `LineMessageForm.tsx`
+
+### 💡 TypeScript
+
+- 型定義は可能な限り明示的に記述
+- `any` の使用は禁止（やむを得ない場合は `// FIXME` コメントをつける）
+
+### 🧼 Lint & フォーマット
+
+- `ESLint` + `Prettier` による自動整形を導入済み
+- 保存時に自動整形がかかるように VS Code 設定推奨
+  - `.vscode/settings.json` 例：
+    ```json
+    {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    }
+    ```
+
+### 💬 コメント・ログ
+
+- 日本語または英語どちらでも OK（チーム内で統一）
+- `console.log` は開発中のみ。**本番前に削除 or logger に置換**
+- 必要な関数には JSDoc コメントをつける
+
+### 🧪 テスト
+
+- テストコードは `__tests__` ディレクトリ配下に配置
+- ファイル名に `.test.ts` / `.test.tsx` を付ける
+
+---
+
+より詳細なルールは [docs/TEAM_RULES.md](docs/TEAM_RULES.md) に記載
 
 ## 📚 ドキュメント
 
