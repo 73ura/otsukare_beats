@@ -109,7 +109,7 @@ export default async function handler(
                 speaker: 3,
               });
               const baseUrl =
-                process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+                process.env.NGROK_URL || "https://98b574dfa87b.ngrok-free.app";
               // 音声で挨拶ラップ返信
               await client.replyMessage(event.replyToken, {
                 type: "audio",
@@ -151,11 +151,11 @@ export default async function handler(
             }
             const fileName = await generateVoiceFile({ text: rap, speaker: 3 });
             const baseUrl =
-              process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+              process.env.NGROK_URL || "https://98b574dfa87b.ngrok-free.app";
             await client.replyMessage(event.replyToken, {
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,
-              duration: 15000,
+              duration: 30000,  // 実際の音声長さ（19.157秒）
             });
             // DB保存
             try {
