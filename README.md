@@ -18,36 +18,70 @@
 
 ```
 project-root/
-├── src/
-│   ├── pages/
-│   │   └── api/
-│   │       └── line/
-│   │           └── webhook.ts       ← LINEからのWebhook受信
-│   ├── lib/
-│   │   ├── openai.ts                ← OpenAIラップ生成処理
-│   │   ├── voicevox.ts              ← VOICEVOX音声合成処理
-│   │   └── logger.ts                ← 共通ログ処理
-│   └── utils/
-│       ├── constants.ts             ← 定数・共通メッセージ
-│       └── helpers.ts               ← 汎用ユーティリティ関数
+├── .github/                    
+│   └── pull_request_template.md   # PR時のテンプレート
+├── docker/
+│   └── mysql/
+│       └── init.sql              # MySQL初期データ投入用SQL
+├── docs/
+│   ├── API_SPEC.md               # APIエンドポイント仕様
+│   ├── API_VOICE.md              # 音声API仕様
+│   ├── DB_SCHEMA.md              # DB設計・ER図・説明
+│   ├── DEPLOY.md                 # デプロイ手順・本番運用メモ
+│   ├── PROMPT_DESIGN.md          # OpenAI用プロンプト設計例
+│   ├── SETUP_GUIDE.md            # 環境構築・起動方法
+│   └── TEAM_RULES.md             # Git・チーム運用ルール
+├── node_modules/                 # (自動生成) npmパッケージ
 ├── prisma/
-│   ├── schema.prisma                ← DBスキーマ
-│   └── seed.ts                      ← 開発用ダミーデータ
+│   ├── migrations/               # Prisma用マイグレーション履歴
+│   │   └── ... 
+│   ├── schema.prisma             # DBスキーマ定義（最重要）
+│   ├── seed.ts                   # 開発用テストデータ投入スクリプト
+│   └── migration_lock.toml
 ├── public/
-│   └── audio/                       ← BGMや音声ファイル置き場
-├── .env
-├── .env.example
-├── docker-compose.yml
-├── Dockerfile
+│   └── audio/                    # 公開用の音声ファイル/BGM
+├── src/
+│   ├── lib/
+│   │   ├── logger.ts             # 共通ロガー
+│   │   ├── openai.ts             # OpenAI APIラップ生成
+│   │   ├── prisma.ts             # Prismaクライアント
+│   │   └── voicevox.ts           # VOICEVOX APIラッパー
+│   ├── pages/
+│   │   ├── api/
+│   │   │   └── line/
+│   │   │       ├── webhook.ts           # LINE Webhook受信メイン
+│   │   │       ├── generate-voice.ts    # 音声生成API
+│   │   │       ├── messages.ts          # 応答メッセージ管理
+│   │   │       ├── rap-patterns.ts      # ラップパターン定義
+│   │   │       ├── test-openai.ts       # OpenAIテストAPI
+│   │   │       ├── test-openai-comment.ts # コメント実験API
+│   │   │       ├── voice.ts             # 音声関連API
+│   │   │       └── webhook.ts.backup    # 旧Webhook実装
+│   │   ├── error.tsx
+│   │   ├── index.tsx
+│   │   └── types/
+│   │       └── voice.ts                 # 型定義
+│   └── utils/
+│       ├── constants.ts                 # 定数管理
+│       └── helpers.ts                   # 汎用ユーティリティ関数
+├── .env                                # 環境変数(本番・開発)
+├── .env.example                        # 環境変数ひな型
+├── .eslintrc.json                      # Lintルール
+├── .gitignore
+├── .prettierrc                         # フォーマッタ
+├── compose.prod.yml                    # 本番用docker-compose
+├── compose.yml                         # 開発用docker-compose
+├── Dockerfile                          # Dockerビルド定義
+├── hello_correct.wav                   # 音声テストサンプル
+├── next.config.js                      # Next.js設定
+├── next-env.d.ts                       # Next.js型定義
+├── package-lock.json
+├── package.json
+├── query.json                          # DBやAPIのサンプルクエリ
 ├── README.md
-├── tsconfig.json
-└── docs/
-    ├── API_SPEC.md              ← 外部APIやWebhook仕様
-    ├── PROMPT_DESIGN.md         ← ラップ生成プロンプト設計
-    ├── SETUP_GUIDE.md           ← 環境構築マニュアル
-    ├── DEPLOY.md                ← デプロイ手順
-    ├── DB_SCHEMA.md             ← スキーマ図やモデルの説明
-    └── TEAM_RULES.md            ← Gitの運用ルール・コミュニケーション
+├── teama_section8@1.0.0                # (一時ファイル? npm用? 運用次第)
+├── test_voice.wav                      # テスト用音声ファイル
+└── tsconfig.json                       # TypeScript設定
 ```
 
 ## 📋 環境変数設定
@@ -82,13 +116,50 @@ LINE → Next.js API Routes → OpenAI + 韻辞典API → MySQL
 ```
 
 ## 👥 担当分担
+| 担当者     | 責任範囲                      | 主要タスク                                 |
+| ---------- | ----------------------------- | ------------------------------------------ |
+| なみさんA  | LINE統合 & システム基盤        | LINE Webhook設計・Next.js API連携・デプロイ|
+| きょんさんB| OpenAI & ラップ生成エンジン    | OpenAI API統合・プロンプト設計・応答調整   |
+| しずかさんC| データベース & バックエンド    | Prisma/DB設計・ユーザー管理・APIロジック   |
+| りょうこD  | 音声機能 & DevOps・セキュリティ| 音声合成API・本番環境構築・運用・監視      |
 
-| 担当者   | 責任範囲                 | 主要タスク                      |
-| -------- | ------------------------ | ------------------------------- |
-| Person A | LINE 連携 & システム基盤 | Webhook、Next.js 設定、デプロイ |
-| Person B | ラップ生成ロジック       | OpenAI API、プロンプト設計      |
-| Person C | 韻辞典 & DB              | 韻検索機能、データベース設計    |
-| Person D | データ管理               | 履歴保存、統計機能              |
+## 👤 作業見積もり（優先度順）
+### なみさんA：LINE統合 & システム基盤（15h）
+
+| 優先度 | タスク | 工数 | 概要 |
+| ------ | ------ | ---- | ---- |
+| ◎ | LINE Messaging API統合 | 5h | LINEボットの送受信、基本動作 |
+| ◎ | Next.js API/Webhook連携 | 4h | Webhook/APIルート設計 |
+| ○ | エラーハンドリング・ログ設計 | 3h | システム安定性UP、トラブル対応 |
+| △ | チームサポート・最終調整 | 3h | 他API連携支援・最終チェック |
+---
+### きょんさんB：OpenAI & ラップ生成エンジン（15h）
+
+| 優先度 | タスク | 工数 | 概要 |
+| ------ | ------ | ---- | ---- |
+| ◎ | OpenAI API統合・基本設定 | 3h | GPT-4等のAPI接続・初期設定 |
+| ◎ | 韻を踏むプロンプト設計 | 8h | 日本語応援ラップのPrompt設計 |
+| ○ | 応答品質テスト・パターン調整 | 2h | ラップ生成のテストと調整 |
+| △ | LINE応答体験最適化 | 2h | UI/UX強化（返信形式改善など） |
+---
+### しづかさんC：データベース & バックエンド（15h）
+
+| 優先度 | タスク | 工数 | 概要 |
+| ------ | ------ | ---- | ---- |
+| ◎ | Prisma設定・スキーマ設計 | 4h | MySQL/PrismaによるDB設計 |
+| ◎ | ユーザー管理・履歴保存 | 5h | LINEユーザー/履歴保存実装 |
+| ○ | パターン分析・データ管理 | 3h | ラップパターン・実績管理 |
+| △ | API設計・バックエンド最適化 | 3h | Next.js API/サーバー改善 |
+---
+### りょうこさんD：音声機能 & DevOps・セキュリティ（15h）
+
+| 優先度 | タスク | 工数 | 概要 |
+| ------ | ------ | ---- | ---- |
+| ◎ | 音声合成API連携 | 6h | 生成ラップの音声化API（SoundBox等） |
+| ◎ | 本番デプロイ設定（Docker等） | 4h | 本番環境/CI/CD/Docker対応 |
+| ○ | APIキー管理・セキュリティ | 2h | .env管理/アクセス制御 |
+| △ | 統合テスト・運用監視 | 3h | 統合テスト/稼働監視 |
+---
 
 ## 🗃 データベース設計
 
