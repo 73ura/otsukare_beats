@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { VoicevoxAudioQuery, VoiceGenerationRequest } from "../types/voice";
+import { VoicevoxAudioQuery, VoiceGenerationRequest } from "../../src/types/voice";
 
 // VOICEVOX API のベースURL（環境変数から取得、デフォルトはlocalhost:50021）
 
