@@ -43,7 +43,7 @@ export async function generateRap(prompt: string, systemPrompt?: string) {
 
     return chatCompletion.choices[0].message.content;
   } catch (error) {
-    logger.error("OpenAI API エラー:", JSON.stringify(error));
+    logger.error(`OpenAI API エラー: ${JSON.stringify(error)}`);
     return null;
   }
 }
