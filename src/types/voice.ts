@@ -1,8 +1,10 @@
 // 音声生成APIの型定義
 
 export interface VoicevoxAudioQuery {
+  accent_phrases: AccentPhrase[];
   speedScale: number;
   pitchScale: number;
+  intonationScale: number;
   volumeScale: number;
   prePhonemeLength: number;
   postPhonemeLength: number;
