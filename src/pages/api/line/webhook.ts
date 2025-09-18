@@ -70,8 +70,8 @@ export default async function handler(
           console.log("ユーザーメッセージ:", userMessage);
 
           // 直近メッセージ取得（Prismaで直接データベースから取得）
-          let messages = [];
-          let lastMessageTime = null;
+          let messages: any[] = [];
+          let lastMessageTime: Date | null = null;
           try {
             // ユーザーを取得または作成
             const user = await prisma.sqlusers.upsert({
