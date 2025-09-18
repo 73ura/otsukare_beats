@@ -91,7 +91,7 @@ export default async function handler(
             console.log("音声ファイル生成完了:", fileName);
 
             // LINEに音声メッセージを送信
-            const baseUrl = process.env.NGROK_URL || "https://eb76d9d7cadf.ngrok-free.app";
+            const baseUrl = process.env.NGROK_URL || "https://your-ngrok-url.ngrok-free.app";
             await client.replyMessage(event.replyToken, {
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,

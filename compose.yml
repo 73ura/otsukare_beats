@@ -4,10 +4,10 @@ services:
     image: mysql:8.0
     container_name: rap_bot_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: rap_bot
-      MYSQL_USER: dev_user
-      MYSQL_PASSWORD: dev_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rap_bot}
+      MYSQL_USER: ${MYSQL_USER:-your_db_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-your_db_password}
     ports:
       - "3306:3306"
     volumes:
@@ -26,7 +26,7 @@ services:
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://dev_user:dev_password@mysql:3306/rap_bot
+      DATABASE_URL: mysql://${MYSQL_USER:-your_db_user}:${MYSQL_PASSWORD:-your_db_password}@mysql:3306/${MYSQL_DATABASE:-rap_bot}
       NODE_ENV: development
       # 環境変数はオプション（.envから読み込み）
       LINE_CHANNEL_ACCESS_TOKEN: ${LINE_CHANNEL_ACCESS_TOKEN:-}

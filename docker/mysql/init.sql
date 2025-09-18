@@ -1,5 +1,6 @@
 -- 開発専用ユーザー作成（広い権限付与）
-CREATE USER IF NOT EXISTS 'dev_user'@'%' IDENTIFIED BY 'dev_password';
+-- パスワードは環境変数で設定してください
+CREATE USER IF NOT EXISTS 'dev_user'@'%' IDENTIFIED BY 'your_secure_password';
 
 -- 全データベースに対する全権限付与（開発用）
 GRANT ALL PRIVILEGES ON *.* TO 'dev_user'@'%' WITH GRANT OPTION;

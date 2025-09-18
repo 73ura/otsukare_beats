@@ -38,12 +38,24 @@ dist/
 build/
 
 # テスト関連（coverageなど）
-coverage/node_modules/
-.next/
-.env.local
+coverage/
 
 # ログファイル
-logs
+logs/
 *.log
 *.log.*
+
+# 音声ファイル（機密性はないが容量削減）
+public/audio/
+*.wav
+*.mp3
+
+# 一時ファイル
+query.json
+test_voice.wav
+hello_correct.wav
+teama_section8@1.0.0
+
+# TypeScriptビルドキャッシュ
+tsconfig.tsbuildinfo
 
