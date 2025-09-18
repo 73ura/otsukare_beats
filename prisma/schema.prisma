@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"  // Vercel + Supabase用にPostgreSQLに変更
   url      = env("DATABASE_URL")
 }
 
