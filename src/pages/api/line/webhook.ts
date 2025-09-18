@@ -68,19 +68,28 @@ export default async function handler(
           const lineUserId = event.source?.userId || "test";
           console.log("ユーザーメッセージ:", userMessage);
 
-          // 直近メッセージ取得
+          // 直近メッセージ取得（Prismaで直接データベースから取得）
           let messages = [];
           let lastMessageTime = null;
           try {
-            const res = await fetch(
-              `http://localhost:3000/api/messages?line_user_id=${lineUserId}`
-            );
-            if (res.ok) {
-              messages = await res.json();
-              if (messages.length > 0) {
-                lastMessageTime = new Date(messages[0].created_at);
-              }
+            // ユーザーを取得または作成
+            const user = await prisma.sqlusers.upsert({
+              where: { line_user_id: lineUserId },
+              update: {},
+              create: { line_user_id: lineUserId },
+            });
+
+            // メッセージ履歴を取得
+            messages = await prisma.messages.findMany({
+              where: { user_id: user.id },
+              orderBy: { created_at: 'desc' },
+              take: 5, // 最新5件
+            });
+
+            if (messages.length > 0) {
+              lastMessageTime = new Date(messages[0].created_at);
             }
+            console.log(`履歴取得成功: ${messages.length}件`);
           } catch (e) {
             console.error("メッセージ履歴取得失敗", e);
           }
@@ -121,18 +130,25 @@ export default async function handler(
                 type: "text",
                 text: greetingRap,
               });
-              // DB保存
+              // DB保存（Prismaで直接保存）
               try {
-                await fetch(`http://localhost:3000/api/messages`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    line_user_id: lineUserId,
+                const user = await prisma.sqlusers.upsert({
+                  where: { line_user_id: lineUserId },
+                  update: {},
+                  create: { line_user_id: lineUserId },
+                });
+
+                await prisma.messages.create({
+                  data: {
+                    user_id: user.id,
                     input_text: "(システム挨拶)",
                     generated_rap: greetingRap,
-                  }),
+                  },
                 });
-              } catch (e) {}
+                console.log("挨拶メッセージ保存成功");
+              } catch (e) {
+                console.error("挨拶DB保存エラー:", e);
+              }
               greeted = true;
               // 続けてテキストで促し
               await client.pushMessage(lineUserId, {
@@ -159,18 +175,25 @@ export default async function handler(
               type: "text",
               text: `🎤 ラップできたYo！\n\n${rap}`,
             });
-            // DB保存
+            // DB保存（Prismaで直接保存）
             try {
-              await fetch(`http://localhost:3000/api/messages`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  line_user_id: lineUserId,
+              const user = await prisma.sqlusers.upsert({
+                where: { line_user_id: lineUserId },
+                update: {},
+                create: { line_user_id: lineUserId },
+              });
+
+              await prisma.messages.create({
+                data: {
+                  user_id: user.id,
                   input_text: userMessage,
                   generated_rap: rap,
-                }),
+                },
               });
-            } catch (e) {}
+              console.log("メッセージ保存成功");
+            } catch (e) {
+              console.error("DB保存エラー:", e);
+            }
           } catch (replyError) {
             await client.replyMessage(event.replyToken, {
               type: "text",
