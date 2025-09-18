@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Client, WebhookEvent } from "@line/bot-sdk";
-import { generateRap, RAP_SYSTEM_PROMPT, RAP_GREETING_PROMPT } from "../../../lib/openai";
+import { generateRap, RAP_SYSTEM_PROMPT, RAP_GREETING_PROMPT, generateRapWithHistory } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
 
@@ -145,7 +145,31 @@ export default async function handler(
 
           // 通常のラップ生成フロー
           try {
-            const rap = await generateRap(userMessage, RAP_SYSTEM_PROMPT);
+            // 過去の会話履歴の有無をチェック
+            const hasHistory = messages.length > 0 && !greeted;
+            console.log("メッセージ数:", messages.length);
+            console.log("greeted:", greeted);
+            console.log("履歴の有無:", hasHistory);
+            
+            let rap;
+            if (hasHistory) {
+              // 履歴を整形
+              const recentHistory = messages
+                .slice(0, 2) // 最新2件を取得
+                .reverse()
+                .map((m: any, i: number) => 
+                  `【${i + 1}回前】ユーザー: ${m.input_text}\nラップ: ${m.generated_rap}`
+                )
+                .join("\n");
+              
+              console.log("履歴あり - generateRapWithHistoryを使用");
+              console.log("履歴内容:", recentHistory);
+              rap = await generateRapWithHistory(userMessage, recentHistory);
+            } else {
+              console.log("履歴なし - generateRapを使用");
+              rap = await generateRap(userMessage, RAP_SYSTEM_PROMPT);
+            }
+            
             console.log("生成されたラップ:", rap);
             if (!rap) {
               await client.replyMessage(event.replyToken, {
@@ -157,11 +181,13 @@ export default async function handler(
             const fileName = await generateVoiceFile({ text: rap, speaker: 3 });
             const baseUrl =
               process.env.NGROK_URL || "https://589a80e637bb.ngrok-free.app";
+            
             await client.replyMessage(event.replyToken, {
               type: "audio",
               originalContentUrl: `${baseUrl}/audio/${fileName}`,
               duration: 30000,  // 実際の音声長さ（19.157秒）
             });
+
             // 音声ラップの後にテキストでもラップを送信
             await client.pushMessage(lineUserId, {
               type: "text",
@@ -180,6 +206,7 @@ export default async function handler(
               });
             } catch (e) {}
           } catch (replyError) {
+            console.error("ラップ生成エラー:", replyError);
             await client.replyMessage(event.replyToken, {
               type: "text",
               text: "音の魔法が、迷子でバグってる！でも大丈夫、すぐに戻ってくる！ちょっと待てばノリノリ復活する！",
