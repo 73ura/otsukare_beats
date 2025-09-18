@@ -154,18 +154,10 @@ export default async function handler(
               });
               return;
             }
-            const fileName = await generateVoiceFile({ text: rap, speaker: 3 });
-            const baseUrl =
-              process.env.NGROK_URL || "https://589a80e637bb.ngrok-free.app";
+            // 音声生成は一時的に無効化して、テキストのみで返信
             await client.replyMessage(event.replyToken, {
-              type: "audio",
-              originalContentUrl: `${baseUrl}/audio/${fileName}`,
-              duration: 30000,  // 実際の音声長さ（19.157秒）
-            });
-            // 音声ラップの後にテキストでもラップを送信
-            await client.pushMessage(lineUserId, {
               type: "text",
-              text: rap,
+              text: `🎤 ラップできたYo！\n\n${rap}`,
             });
             // DB保存
             try {
