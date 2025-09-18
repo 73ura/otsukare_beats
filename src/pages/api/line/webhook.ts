@@ -100,20 +100,18 @@ export default async function handler(
           
           // 通常のラップ生成フロー（履歴を考慮）
           try {
-            // 履歴情報をプロンプトに追加
-            let contextPrompt = RAP_SYSTEM_PROMPT;
-            if (messages.length > 0) {
-              const history = messages
-                .slice(0, 3) // 最新3件
-                .reverse()
-                .map((m: any, i: number) => 
-                  `【${i + 1}回前】ユーザー: ${m.input_text}\nラップ: ${m.generated_rap}`
-                )
-                .join("\n");
-              contextPrompt = `${RAP_SYSTEM_PROMPT}\n\n## 過去の対話履歴\n${history}\n\n上記の過去のやりとりを踏まえて、今回のメッセージとの関連性や継続性を意識し、まるで友達との会話が続いているような自然な流れでラップを生成してください。過去の話題や感情の変化も考慮してください。`;
-            }
+            // 履歴を新しい形式で準備（最新3件を古い順に並べる）
+            const conversationHistory = messages.length > 0 
+              ? messages
+                  .slice(0, 3) // 最新3件
+                  .reverse() // 古い順に並べ替え（会話の流れを正しく再現）
+                  .map((m: any) => ({
+                    input_text: m.input_text,
+                    generated_rap: m.generated_rap
+                  }))
+              : undefined;
             
-            const rap = await generateRap(userMessage, contextPrompt);
+            const rap = await generateRap(userMessage, conversationHistory);
             console.log("生成されたラップ:", rap);
             if (!rap) {
               await client.replyMessage(event.replyToken, {
@@ -125,7 +123,7 @@ export default async function handler(
             // 音声生成は一時的に無効化して、テキストのみで返信
             await client.replyMessage(event.replyToken, {
               type: "text",
-              text: `🎤 ラップできたYo！\n\n${rap}`,
+              text: rap,
             });
             // DB保存（Prismaで直接保存）
             try {
