@@ -4,6 +4,7 @@ import { Client, WebhookEvent } from "@line/bot-sdk";
 import { generateRap, RAP_SYSTEM_PROMPT, RAP_GREETING_PROMPT } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
+import { prisma } from "../../../lib/prisma";
 
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
