@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Client, WebhookEvent } from "@line/bot-sdk";
-import { generateRap, RAP_SYSTEM_PROMPT, RAP_GREETING_PROMPT } from "../../../lib/openai";
+import { generateRap, RAP_SYSTEM_PROMPT } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
 import { generateVoiceFile } from "../../../lib/voicevox";
 import { prisma } from "../../../lib/prisma";
@@ -97,72 +97,23 @@ export default async function handler(
 
           const now = new Date();
           let greeted = false;
-          if (
-            lastMessageTime &&
-            now.getTime() - lastMessageTime.getTime() > 60 * 60 * 1000
-          ) {
-            // 1時間以上空いていた場合、過去対話履歴をAIに渡して挨拶ラップ生成
-            const history = messages
-              .slice(0, 3)
-              .reverse()
-              .map(
-                (m: any, i: number) =>
-                  `【${i + 1}回前】ユーザー: ${m.input_text}\nラップ: ${m.generated_rap}`
-              )
-              .join("\n");
-            const greetingPrompt = RAP_GREETING_PROMPT.replace("(履歴をここに挿入)", history);
-            const greetingRap = await generateRap(greetingPrompt, RAP_GREETING_PROMPT);
-            if (greetingRap) {
-              // 音声生成
-              const fileName = await generateVoiceFile({
-                text: greetingRap,
-                speaker: 3,
-              });
-              const baseUrl =
-                process.env.NGROK_URL || "https://589a80e637bb.ngrok-free.app";
-              // 音声で挨拶ラップ返信
-              await client.replyMessage(event.replyToken, {
-                type: "audio",
-                originalContentUrl: `${baseUrl}/audio/${fileName}`,
-                duration: 15000,
-              });
-              // 音声ラップの後にテキストでもラップを送信
-              await client.pushMessage(lineUserId, {
-                type: "text",
-                text: greetingRap,
-              });
-              // DB保存（Prismaで直接保存）
-              try {
-                const user = await prisma.sqlusers.upsert({
-                  where: { line_user_id: lineUserId },
-                  update: {},
-                  create: { line_user_id: lineUserId },
-                });
-
-                await prisma.messages.create({
-                  data: {
-                    user_id: user.id,
-                    input_text: "(システム挨拶)",
-                    generated_rap: greetingRap,
-                  },
-                });
-                console.log("挨拶メッセージ保存成功");
-              } catch (e) {
-                console.error("挨拶DB保存エラー:", e);
-              }
-              greeted = true;
-              // 続けてテキストで促し
-              await client.pushMessage(lineUserId, {
-                type: "text",
-                text: "ユーザーのつぶやきをラップに昇華させるYo！好きなことを送ってみてYo！",
-              });
-              // ここでreturnすると通常フローに進まないので、以降も続行
-            }
-          }
-
-          // 通常のラップ生成フロー
+          
+          // 通常のラップ生成フロー（履歴を考慮）
           try {
-            const rap = await generateRap(userMessage, RAP_SYSTEM_PROMPT);
+            // 履歴情報をプロンプトに追加
+            let contextPrompt = RAP_SYSTEM_PROMPT;
+            if (messages.length > 0) {
+              const history = messages
+                .slice(0, 3) // 最新3件
+                .reverse()
+                .map((m: any, i: number) => 
+                  `【${i + 1}回前】ユーザー: ${m.input_text}\nラップ: ${m.generated_rap}`
+                )
+                .join("\n");
+              contextPrompt = `${RAP_SYSTEM_PROMPT}\n\n## 過去の対話履歴\n${history}\n\n上記の過去のやりとりを踏まえて、今回のメッセージとの関連性や継続性を意識し、まるで友達との会話が続いているような自然な流れでラップを生成してください。過去の話題や感情の変化も考慮してください。`;
+            }
+            
+            const rap = await generateRap(userMessage, contextPrompt);
             console.log("生成されたラップ:", rap);
             if (!rap) {
               await client.replyMessage(event.replyToken, {
