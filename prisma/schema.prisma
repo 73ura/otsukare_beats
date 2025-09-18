@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"  // Supabase PostgreSQL用に変更
   url      = env("DATABASE_URL")
 }
 
