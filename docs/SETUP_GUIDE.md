@@ -1,81 +1,67 @@
-## **🛠️ 開発環境セットアップ＆起動手順**
+# 🛠️ 開発環境セットアップガイド
 
-## ✅ 前提準備（初回のみ）
-まずはプロジェクトをクローンして、環境を整えましょう！
-```
-git clone https://github.com/ms-engineer-bc25-06/TeamA_Section8.git
+## 📋 前提条件
 
-cd TeamA_Section8
+- Node.js 18+
+- Git
+- Docker (音声機能を使用する場合)
 
+## 🚀 クイックスタート
+
+### 1. プロジェクトのクローン
+```bash
+git clone https://github.com/73ura/otsukare_beats.git
+cd otsukare_beats
 npm install
-
-// .envに必要な環境変数を記入してルート直下に配置する。
-
-npm run dev
-
 ```
 
-
-## 🐳 Dockerコンテナの起動
-
-まずは、アプリ全体を動かすためのDocker環境を立ち上げます：
-
+### 2. 環境変数の設定
 ```bash
-docker-compose up
+# .env.local ファイルを作成
+cp .env.example .env.local
+
+### 3. データベースの設定
+```bash
+# Prisma クライアント生成
+npx prisma generate
+
+# データベースにスキーマを適用
+npx prisma db push
 ```
 
-> ※ バックエンド・フロントエンド・DB などがまとめて立ち上がります！
-> 
-
----
-
-## 🌐 2. Next.jsサーバの起動（必要な人のみ）
-
-フロントエンドだけ個別で開発したい人は、
-
-```
+### 4. 開発サーバーの起動
+```bash
 npm run dev
 ```
 
-> http://localhost:3000 で開発中の画面が確認できます。
-> 
+アプリケーションが http://localhost:3000 で起動します。
 
----
+## 🎵 音声機能の有効化（オプション）
 
-## 🌉 3. ngrokの起動（担当：なみ）
-
-> チームのWebhookテスト用にngrokトンネルを起動・管理します!
-> 
-> 
-> チームメンバーはngrokのURLを使う必要はありません。
-> 
-
-### 🔐 [初回のみ] ngrok認証トークンの設定（各自）
-
-みなさんがngrokのユーザーだと証明するため、ターミナルで以下のコマンドを入力してください。
-
-このコマンドで認証トークンを設定ファイルに保存することができます！
+### ローカル開発で音声機能を使用する場合
 
 ```bash
-ngrok config add-authtoken <your_token>
+# VOICEVOXサーバーをDockerで起動
+docker compose up voicevox -d
+
+# アプリケーションを起動
+npm run dev
 ```
 
-※ トークンは ngrok マイページから取得：https://dashboard.ngrok.com/get-started/your-authtoken
+VOICEVOXサーバーが http://localhost:50021 で起動し、音声生成が可能になります。
 
----
+## 📡 LINE Webhook設定
 
-### 🚀 [毎回] ngrok起動（担当：なみ）
+### 本番環境（Vercel）
+1. Vercelでデプロイ完了後のURLを取得
+2. LINE Developers コンソールでWebhook URLを設定
+3. URL例：`https://your-app.vercel.app/api/line/webhook`
 
+### ローカルテスト（ngrok使用）
 ```bash
+# ngrokでローカルサーバーを公開
 ngrok http 3000
+
+# 発行されたURLをLINE Developersで設定
+# 例：https://abc123.ngrok-free.app/api/line/webhook
 ```
-
-> 8000 はWebhookサーバがListenしているポート発行されたURLをLINE Developerコンソールに貼り付ける
-> 
-
----
-
-## 📬 Webhook URL設定（担当：なみ）
-
-- LINE Developers コンソールにて、Webhook URL を ngrokで発行されたURLに更新
-- 例：`https://abc123.ngrok.io/webhook`
