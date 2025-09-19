@@ -120,12 +120,9 @@ export default async function handler(
               });
               return;
             }
-            // Google TTS で音声生成を実行（Vercel対応）
+            // Google TTS で音声生成を実行（VOICEVOXと同じ方式）
             try {
-              const { audioUrl } = await generateVoiceWithGoogleTTS(rap, 'female');
-              
-              // 音声の長さを推定（文字数ベース）
-              const estimatedDuration = Math.max(3000, Math.min(rap.length * 100, 60000)); // 3秒〜60秒
+              const { audioUrl, duration } = await generateVoiceWithGoogleTTS(rap, 'female');
               
               await client.replyMessage(event.replyToken, [
                 {
@@ -135,7 +132,7 @@ export default async function handler(
                 {
                   type: "audio",
                   originalContentUrl: audioUrl,
-                  duration: estimatedDuration,
+                  duration: duration, // 正確な長さを使用
                 }
               ]);
             } catch (voiceError) {

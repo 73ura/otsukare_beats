@@ -22,10 +22,11 @@ export async function generateVoiceWithGoogleTTS(
       input: { text: text },
       voice: voiceConfig,
       audioConfig: {
-        audioEncoding: 'MP3', // MP3フォーマット（LINE互換性が高い）
+        audioEncoding: 'MP3',
+        effectsProfileId: ['telephony-class-application'], // LINE音声通話品質
         speakingRate: 1.0,
         pitch: 0.0,
-        volumeGainDb: 0.0
+        volumeGainDb: -2.0 // 少し音量を下げる（LINE推奨）
       }
     };
 
@@ -50,11 +51,14 @@ export async function generateVoiceWithGoogleTTS(
     // Base64デコードして音声バッファを作成（MP3形式）
     const audioBuffer = Buffer.from(audioContent, 'base64');
     
+    // 音声の長さを推定（文字数ベース、VOICEVOXと同じ方式）
+    const estimatedDuration = Math.max(1000, text.length * 80); // 1秒〜文字数×80ms
+    
     // Vercelの/tmpディレクトリにMP3ファイルを保存
     const audioId = generateAudioId();
     const audioUrl = await saveAudioToTemp(audioBuffer, audioId);
 
-    return { audioId, audioUrl };
+    return { audioId, audioUrl, duration: estimatedDuration };
   } catch (error) {
     console.error("Google TTS error:", error);
     throw error;
@@ -69,18 +73,21 @@ function generateAudioId(): string {
   return `${timestamp}_${randomId}`;
 }
 
-// Vercelの/tmpディレクトリにMP3ファイルを保存
+// VOICEVOXと同じ形式でファイル名を生成して保存
 async function saveAudioToTemp(audioBuffer: Buffer, audioId: string): Promise<string> {
   const fs = await import('fs/promises');
   const path = await import('path');
   
-  // /tmpディレクトリにMP3として保存
-  const fileName = `${audioId}.mp3`;
-  const filePath = path.join('/tmp', fileName);
+  // VOICEVOXと同じファイル名形式を使用
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const randomId = Math.random().toString(36).substring(2, 8);
+  const fileName = `voice_${timestamp}_${randomId}.mp3`;  // VOICEVOXと同じパターン
   
+  // /tmpディレクトリに保存
+  const filePath = path.join('/tmp', fileName);
   await fs.writeFile(filePath, audioBuffer);
   
-  // 音声URLを生成
+  // 音声URLを生成（VOICEVOXと同じパス形式）
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   
