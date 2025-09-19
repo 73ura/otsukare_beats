@@ -37,11 +37,30 @@ export default async function handler(
     return;
   }
 
-  // 音声データを返す
+  // LINE音声メッセージ用のヘッダー設定
   res.setHeader('Content-Type', audioData.contentType);
-  res.setHeader('Content-Length', audioData.data.length);
-  res.setHeader('Cache-Control', 'public, max-age=300'); // 5分間キャッシュ
-  res.status(200).send(audioData.data);
+  res.setHeader('Content-Length', audioData.data.length.toString());
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Range');
+  
+  // Rangeリクエストに対応（LINE音声再生で重要）
+  const range = req.headers.range;
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : audioData.data.length - 1;
+    const chunksize = (end - start) + 1;
+    const chunk = audioData.data.slice(start, end + 1);
+    
+    res.setHeader('Content-Range', `bytes ${start}-${end}/${audioData.data.length}`);
+    res.setHeader('Content-Length', chunksize.toString());
+    res.status(206).send(chunk);
+  } else {
+    res.status(200).send(audioData.data);
+  }
 }
 
 // 音声データをキャッシュに保存する関数（他のAPIから呼び出し）

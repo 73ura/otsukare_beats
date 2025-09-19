@@ -124,6 +124,9 @@ export default async function handler(
             try {
               const { audioUrl } = await generateVoiceWithGoogleTTS(rap, 'female');
               
+              // 音声の長さを推定（文字数ベース）
+              const estimatedDuration = Math.max(3000, Math.min(rap.length * 100, 60000)); // 3秒〜60秒
+              
               await client.replyMessage(event.replyToken, [
                 {
                   type: "text",
@@ -132,7 +135,7 @@ export default async function handler(
                 {
                   type: "audio",
                   originalContentUrl: audioUrl,
-                  duration: 10000, // 10秒（適当な値、実際の長さに合わせて調整可能）
+                  duration: estimatedDuration,
                 }
               ]);
             } catch (voiceError) {

@@ -22,7 +22,7 @@ export async function generateVoiceWithGoogleTTS(
       input: { text: text },
       voice: voiceConfig,
       audioConfig: {
-        audioEncoding: 'MP3',
+        audioEncoding: 'MP3', // LINEはMP3も対応しているが、まずはMP3で確認
         speakingRate: 1.0,
         pitch: 0.0,
         volumeGainDb: 0.0
