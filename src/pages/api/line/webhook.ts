@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Client, WebhookEvent } from "@line/bot-sdk";
 import { generateRap, RAP_SYSTEM_PROMPT } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
-import { generateVoiceWithGoogleTTS } from "../../../lib/fallback-tts";
+import { generateVoiceFile } from "../../../lib/voicevox";
 import { prisma } from "../../../lib/prisma";
 
 const config = {
@@ -120,11 +120,21 @@ export default async function handler(
               });
               return;
             }
-            // テキストと音声の両方を送信
+            // VOICEVOX音声生成（元の動作していた実装）
             try {
-              const { audioUrl, duration } = await generateVoiceWithGoogleTTS(rap, 'female');
+              const fileName = await generateVoiceFile({
+                text: rap,
+                speaker: 3, // ずんだもんのノーマル
+                speed: 1.0,
+                pitch: 0.0,
+                volume: 1.0,
+              });
+
+              // 本番環境とローカル環境でベースURLを動的に決定
+              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                             (process.env.NODE_ENV === 'production' ? 'https://your-production-domain.com' : 'http://localhost:3000');
+              const audioUrl = `${baseUrl}/audio/${fileName}`;
               
-              // テキストと音声を両方送信（配列形式）
               await client.replyMessage(event.replyToken, [
                 {
                   type: "text",
@@ -133,11 +143,11 @@ export default async function handler(
                 {
                   type: "audio",
                   originalContentUrl: audioUrl,
-                  duration: 15000, // 固定15秒
+                  duration: 15000, // 15秒固定（VOICEVOXと同じ）
                 }
               ]);
             } catch (voiceError) {
-              console.error("Google TTS音声生成エラー:", voiceError);
+              console.error("VOICEVOX音声生成エラー:", voiceError);
               // 音声生成に失敗した場合はテキストのみで返信
               await client.replyMessage(event.replyToken, {
                 type: "text",
