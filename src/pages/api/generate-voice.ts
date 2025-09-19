@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { generateVoiceWithGoogleTTS } from "../../lib/fallback-tts";
+import { generateVoiceFile } from "../../lib/voicevox";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,7 +11,7 @@ export default async function handler(
   }
 
   try {
-    const { text, voiceType } = req.body;
+    const { text, speaker, speed, pitch, volume } = req.body;
 
     // バリデーション
     if (!text || typeof text !== "string") {
@@ -22,28 +22,36 @@ export default async function handler(
       return;
     }
 
-    // Google TTSは長文も対応可能（制限緩和）
-    if (text.length > 5000) {
+    if (!speaker || typeof speaker !== "number" || speaker < 1 || speaker > 109) {
       res.status(400).json({ 
         success: false, 
-        message: "Text must be 5000 characters or less" 
+        message: "Speaker must be a number between 1 and 109" 
       });
       return;
     }
 
-    // 音声タイプのバリデーション
-    const voice = voiceType === 'male' ? 'male' : 'female';
+    if (text.length > 500) {
+      res.status(400).json({ 
+        success: false, 
+        message: "Text must be 500 characters or less" 
+      });
+      return;
+    }
 
-    // Google TTS で音声生成（Vercel対応）
-    const { audioId, audioUrl, duration } = await generateVoiceWithGoogleTTS(text, voice);
+    // VOICEVOX音声生成
+    const fileName = await generateVoiceFile({
+      text,
+      speaker,
+      speed: speed || 1.0,
+      pitch: pitch || 0.0,
+      volume: volume || 1.0,
+    });
 
     res.status(200).json({
       success: true,
-      audioUrl: audioUrl,
-      audioId: audioId,
-      duration: duration,
-      message: "Voice generated successfully with Google TTS",
-      voiceType: voice
+      audioUrl: `/audio/${fileName}`,
+      fileName: fileName,
+      message: "Voice generated successfully"
     });
 
   } catch (error) {
