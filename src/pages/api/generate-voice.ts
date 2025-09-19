@@ -35,12 +35,13 @@ export default async function handler(
     const voice = voiceType === 'male' ? 'male' : 'female';
 
     // Google TTS で音声生成（Vercel対応）
-    const { audioId, audioUrl } = await generateVoiceWithGoogleTTS(text, voice);
+    const { audioId, audioUrl, duration } = await generateVoiceWithGoogleTTS(text, voice);
 
     res.status(200).json({
       success: true,
       audioUrl: audioUrl,
       audioId: audioId,
+      duration: duration,
       message: "Voice generated successfully with Google TTS",
       voiceType: voice
     });

@@ -6,7 +6,7 @@
 export async function generateVoiceWithGoogleTTS(
   text: string,
   voiceType: 'male' | 'female' = 'female'
-): Promise<{ audioId: string; audioUrl: string }> {
+): Promise<{ audioId: string; audioUrl: string; duration: number }> {
   try {
     const apiKey = process.env.GOOGLE_TTS_API_KEY;
     if (!apiKey) {

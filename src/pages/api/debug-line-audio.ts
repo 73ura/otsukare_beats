@@ -17,7 +17,7 @@ export default async function handler(
     console.log(`🔍 Starting LINE audio debug for: "${testText}"`);
 
     // 1. 音声生成
-    const { audioId, audioUrl } = await generateVoiceWithGoogleTTS(testText, 'female');
+    const { audioId, audioUrl, duration } = await generateVoiceWithGoogleTTS(testText, 'female');
     console.log(`🎵 Audio generated: ID=${audioId}, URL=${audioUrl}`);
 
     // 2. 生成されたURLに直接アクセスしてテスト
@@ -44,6 +44,7 @@ export default async function handler(
       debug: {
         audioId,
         audioUrl,
+        duration,
         response: {
           status: audioResponse.status,
           size: audioSize,
