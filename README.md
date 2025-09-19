@@ -344,6 +344,49 @@ docker compose --profile dev up -d
 - [Next.js ドキュメント](https://nextjs.org/docs)
 - [Prisma ドキュメント](https://www.prisma.io/docs)
 
+## 🎵 音声機能について
+
+### 現在の状況
+- **実装状況**: VOICEVOX音声合成機能は実装済み
+- **動作環境**: ローカル開発環境でのみ動作
+- **本番環境**: 予算の都合でVOICEVOXサーバーをデプロイしていないため音声機能は無効
+
+### 音声機能を有効化する方法
+
+音声機能を本番環境で使用したい場合は、以下のいずれかのサーバーでVOICEVOXをホスティングしてください：
+
+#### 🚀 推奨ホスティングサービス
+
+| サービス | 月額費用 | メモリ | 特徴 |
+|---------|----------|--------|------|
+| **Railway** | $5〜 | 1GB〜 | 高速、簡単デプロイ |
+| **Render.com** | $7〜 | 512MB〜 | 安定、自動スケール |
+| **Google Cloud Run** | $10〜 | 1GB〜 | 従量課金、高性能 |
+| **AWS ECS** | $15〜 | 1GB〜 | 本格運用向け |
+
+#### 🔧 デプロイ手順
+
+1. **Dockerファイル使用**: プロジェクト内の `compose.yml` を参考
+2. **環境変数設定**: `VOICEVOX_BASE_URL` にデプロイしたサーバーのURLを設定
+3. **Vercel再デプロイ**: 環境変数更新後に自動デプロイ
+
+#### 📁 関連ファイル
+
+音声機能の実装は以下のファイルに含まれています：
+- `src/lib/voicevox.ts` - VOICEVOX API連携
+- `src/pages/api/generate-voice.ts` - 音声生成エンドポイント
+- `src/pages/api/line/webhook.ts` - LINE音声メッセージ送信
+- `compose.yml` / `compose.prod.yml` - Docker設定
+
+### 代替案
+
+予算を抑えたい場合の代替音声サービス：
+- **Google Cloud Text-to-Speech**: 月400万文字無料
+- **AWS Polly**: 月500万文字無料
+- **Azure Speech Services**: 月50万文字無料
+
+実装例は過去のコミット履歴から参照可能です。
+
 ## 🆘 トラブルシューティング
 
 ### よくある問題
@@ -361,3 +404,9 @@ docker compose --profile dev up -d
 3. **DB 接続エラー**
    - DATABASE_URL を確認
    - `npx prisma db push` 実行済みか確認
+
+4. **音声機能が動作しない**
+   - VOICEVOXサーバーが起動しているか確認
+   - `VOICEVOX_BASE_URL` 環境変数を確認
+   - ローカル: `http://localhost:50021`
+   - 本番: デプロイしたVOICEVOXサーバーのURL
