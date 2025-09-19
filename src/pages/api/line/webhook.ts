@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Client, WebhookEvent } from "@line/bot-sdk";
 import { generateRap, RAP_SYSTEM_PROMPT } from "../../../lib/openai";
 import { validateSignature } from "@line/bot-sdk";
-import { generateVoiceFile } from "../../../lib/voicevox";
+import { generateVoiceWithGoogleTTS } from "../../../lib/fallback-tts";
 import { prisma } from "../../../lib/prisma";
 
 const config = {
@@ -120,11 +120,34 @@ export default async function handler(
               });
               return;
             }
-            // 音声生成は一時的に無効化して、テキストのみで返信
-            await client.replyMessage(event.replyToken, {
-              type: "text",
-              text: rap,
-            });
+            // Google TTS で音声生成を実行
+            try {
+              const fileName = await generateVoiceWithGoogleTTS(rap, 'female');
+
+              // 本番環境とローカル環境でベースURLを動的に決定
+              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                             (process.env.NODE_ENV === 'production' ? 'https://your-production-domain.com' : 'http://localhost:3000');
+              const audioUrl = `${baseUrl}/audio/${fileName}`;
+              
+              await client.replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: rap,
+                },
+                {
+                  type: "audio",
+                  originalContentUrl: audioUrl,
+                  duration: 10000, // 10秒（適当な値、実際の長さに合わせて調整可能）
+                }
+              ]);
+            } catch (voiceError) {
+              console.error("Google TTS音声生成エラー:", voiceError);
+              // 音声生成に失敗した場合はテキストのみで返信
+              await client.replyMessage(event.replyToken, {
+                type: "text",
+                text: rap,
+              });
+            }
             // DB保存（Prismaで直接保存）
             try {
               const user = await prisma.sqlusers.upsert({
