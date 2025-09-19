@@ -70,17 +70,13 @@ project-root/
 ├── .gitignore
 ├── .prettierrc                         # フォーマッタ
 ├── compose.prod.yml                    # 本番用docker-compose
-├── compose.yml                         # 開発用docker-compose
+├── compose.yml                         # 開発用docker-compose  
 ├── Dockerfile                          # Dockerビルド定義
-├── hello_correct.wav                   # 音声テストサンプル
 ├── next.config.js                      # Next.js設定
 ├── next-env.d.ts                       # Next.js型定義
 ├── package-lock.json
 ├── package.json
-├── query.json                          # DBやAPIのサンプルクエリ
 ├── README.md
-├── teama_section8@1.0.0                # (一時ファイル? npm用? 運用次第)
-├── test_voice.wav                      # テスト用音声ファイル
 └── tsconfig.json                       # TypeScript設定
 ```
 
