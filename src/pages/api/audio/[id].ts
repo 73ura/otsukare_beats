@@ -69,7 +69,8 @@ function generateAudioId(): string {
 // 古いキャッシュをクリア
 function cleanOldCache() {
   const now = Date.now();
-  for (const [id, data] of audioCache.entries()) {
+  const entries = Array.from(audioCache.entries());
+  for (const [id, data] of entries) {
     if (now - data.timestamp > CACHE_DURATION) {
       audioCache.delete(id);
     }
