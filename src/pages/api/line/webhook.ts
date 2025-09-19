@@ -120,26 +120,30 @@ export default async function handler(
               });
               return;
             }
-            // まずはテキストを確実に送信、音声は一時的に無効化
-            await client.replyMessage(event.replyToken, {
-              type: "text",
-              text: rap,
-            });
-            
-            // 音声機能は一時的にコメントアウト（問題解決後に有効化）
-            /*
+            // テキストと音声の両方を送信
             try {
               const { audioUrl, duration } = await generateVoiceWithGoogleTTS(rap, 'female');
               
-              await client.replyMessage(event.replyToken, {
-                type: "audio", 
-                originalContentUrl: audioUrl,
-                duration: 15000,
-              });
+              // テキストと音声を両方送信（配列形式）
+              await client.replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: rap,
+                },
+                {
+                  type: "audio",
+                  originalContentUrl: audioUrl,
+                  duration: 15000, // 固定15秒
+                }
+              ]);
             } catch (voiceError) {
               console.error("Google TTS音声生成エラー:", voiceError);
+              // 音声生成に失敗した場合はテキストのみで返信
+              await client.replyMessage(event.replyToken, {
+                type: "text",
+                text: rap,
+              });
             }
-            */
             // DB保存（Prismaで直接保存）
             try {
               const user = await prisma.sqlusers.upsert({
