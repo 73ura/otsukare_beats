@@ -19,7 +19,8 @@ export default async function handler(
   }
 
   // ファイル名のバリデーション（セキュリティ）
-  if (!/^[a-z0-9_]+\.(wav|mp3)$/i.test(filename)) {
+  // VOICEVOXファイル名形式: voice_2025-09-19T02-06-34-228Z_randomid.mp3
+  if (!/^[a-z0-9_-]+\.(wav|mp3)$/i.test(filename)) {
     res.status(400).json({ error: "Invalid filename format" });
     return;
   }
