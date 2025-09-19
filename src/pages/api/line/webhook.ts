@@ -120,21 +120,16 @@ export default async function handler(
               });
               return;
             }
-            // Google TTS で音声生成を実行（VOICEVOXと同じ方式）
+            // Google TTS で音声生成を実行（VOICEVOXと完全に同じ方式）
             try {
               const { audioUrl, duration } = await generateVoiceWithGoogleTTS(rap, 'female');
               
-              await client.replyMessage(event.replyToken, [
-                {
-                  type: "text",
-                  text: rap,
-                },
-                {
-                  type: "audio",
-                  originalContentUrl: audioUrl,
-                  duration: duration, // 正確な長さを使用
-                }
-              ]);
+              // VOICEVOXと同じ方式：音声メッセージのみ送信（テキストは送信しない）
+              await client.replyMessage(event.replyToken, {
+                type: "audio",
+                originalContentUrl: audioUrl,
+                duration: 15000, // VOICEVOXと同じ固定値15秒
+              });
             } catch (voiceError) {
               console.error("Google TTS音声生成エラー:", voiceError);
               // 音声生成に失敗した場合はテキストのみで返信
