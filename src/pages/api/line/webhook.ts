@@ -120,14 +120,9 @@ export default async function handler(
               });
               return;
             }
-            // Google TTS で音声生成を実行
+            // Google TTS で音声生成を実行（Vercel対応）
             try {
-              const fileName = await generateVoiceWithGoogleTTS(rap, 'female');
-
-              // 本番環境とローカル環境でベースURLを動的に決定
-              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                             (process.env.NODE_ENV === 'production' ? 'https://your-production-domain.com' : 'http://localhost:3000');
-              const audioUrl = `${baseUrl}/audio/${fileName}`;
+              const { audioUrl } = await generateVoiceWithGoogleTTS(rap, 'female');
               
               await client.replyMessage(event.replyToken, [
                 {

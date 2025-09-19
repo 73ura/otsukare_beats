@@ -34,12 +34,12 @@ export default async function handler(
 
       console.log(`Testing Google TTS with text: "${testText}" and voice: ${voice}`);
 
-      const fileName = await generateVoiceWithGoogleTTS(testText, voice);
+      const { audioId, audioUrl } = await generateVoiceWithGoogleTTS(testText, voice);
 
       res.status(200).json({
         success: true,
-        audioUrl: `/audio/${fileName}`,
-        fileName: fileName,
+        audioUrl: audioUrl,
+        audioId: audioId,
         message: "Google TTS test successful",
         voiceType: voice,
         textLength: testText.length

@@ -1,14 +1,12 @@
-import fs from "fs";
-import path from "path";
-
 /**
  * Google Cloud Text-to-Speech API を使用した音声生成
  * 無料枠: 月400万文字
+ * Vercel対応：ファイル保存なしで直接音声データを返す
  */
 export async function generateVoiceWithGoogleTTS(
   text: string,
   voiceType: 'male' | 'female' = 'female'
-): Promise<string> {
+): Promise<{ audioId: string; audioUrl: string }> {
   try {
     const apiKey = process.env.GOOGLE_TTS_API_KEY;
     if (!apiKey) {
@@ -49,45 +47,25 @@ export async function generateVoiceWithGoogleTTS(
     const data = await response.json();
     const audioContent = data.audioContent;
 
-    // Base64デコードしてファイル保存
+    // Base64デコードして音声バッファを作成
     const audioBuffer = Buffer.from(audioContent, 'base64');
-    const fileName = await saveGoogleTTSAudioFile(audioBuffer);
+    
+    // メモリキャッシュに保存してIDを取得
+    const { storeAudioInCache } = await import('../pages/api/audio/[id]');
+    const audioId = storeAudioInCache(audioBuffer, 'audio/mpeg');
+    
+    // 音声URLを生成
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const audioUrl = `${baseUrl}/api/audio/${audioId}`;
 
-    return fileName;
+    return { audioId, audioUrl };
   } catch (error) {
     console.error("Google TTS error:", error);
     throw error;
   }
 }
 
-/**
- * Google TTSで生成された音声ファイルを保存
- */
-async function saveGoogleTTSAudioFile(audioBuffer: Buffer): Promise<string> {
-  try {
-    // ファイル名生成（タイムスタンプ + ランダム）
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const randomId = Math.random().toString(36).substring(2, 8);
-    const fileName = `google_tts_${timestamp}_${randomId}.mp3`;
-
-    // 保存パス
-    const audioDir = path.join(process.cwd(), "public", "audio");
-    const filePath = path.join(audioDir, fileName);
-
-    // ディレクトリが存在しない場合は作成
-    if (!fs.existsSync(audioDir)) {
-      fs.mkdirSync(audioDir, { recursive: true });
-    }
-
-    // ファイル保存
-    fs.writeFileSync(filePath, audioBuffer);
-
-    return fileName;
-  } catch (error) {
-    console.error("Error saving Google TTS audio file:", error);
-    throw error;
-  }
-}
 
 /**
  * 利用可能な日本語音声一覧を取得
