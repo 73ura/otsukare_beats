@@ -51,15 +51,12 @@ export async function generateVoiceWithGoogleTTS(
     // Base64デコードして音声バッファを作成
     const audioBuffer = Buffer.from(audioContent, 'base64');
     
-    // 一時的な解決策：Base64データURLとして直接返す（テスト用）
-    const base64Audio = `data:audio/mpeg;base64,${audioContent}`;
+    // WAVヘッダーを追加してWAVファイルを作成
+    const wavBuffer = addWavHeader(audioBuffer, 16000, 1, 16);
     
-    // Cloudinary等の外部ストレージを使用する場合はここで実装
-    // const audioUrl = await uploadToCloudinary(audioBuffer);
-    
-    // 現在は一時的にVercelのtmpディレクトリを使用（テスト用）
+    // Vercelの/tmpディレクトリに音声ファイルを保存
     const audioId = generateAudioId();
-    const audioUrl = await createTemporaryAudioUrl(audioBuffer, audioId);
+    const audioUrl = await saveAudioToTemp(wavBuffer, audioId);
 
     return { audioId, audioUrl };
   } catch (error) {
@@ -76,23 +73,25 @@ function generateAudioId(): string {
   return `${timestamp}_${randomId}`;
 }
 
-// 一時的な音声URL生成（Vercelの/tmpディレクトリ使用）
-async function createTemporaryAudioUrl(audioBuffer: Buffer, audioId: string): Promise<string> {
-  // WAVヘッダーを追加してWAVファイルを作成
-  const wavBuffer = addWavHeader(audioBuffer, 16000, 1, 16);
+// Vercelの/tmpディレクトリに音声ファイルを保存
+async function saveAudioToTemp(wavBuffer: Buffer, audioId: string): Promise<string> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
   
-  // メモリキャッシュに保存してIDを取得
-  const { storeAudioInCache } = await import('../pages/api/audio/[id]');
-  storeAudioInCache(wavBuffer, 'audio/wav');
+  // /tmpディレクトリに保存（Vercelで利用可能）
+  const fileName = `${audioId}.wav`;
+  const filePath = path.join('/tmp', fileName);
+  
+  await fs.writeFile(filePath, wavBuffer);
   
   // 音声URLを生成
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   
-  return `${baseUrl}/api/audio/${audioId}`;
+  return `${baseUrl}/api/audio-file/${fileName}`;
 }
 
-// WAVヘッダーを追加する関数
+// WAVヘッダーを追加する関数（LINE互換性重視）
 function addWavHeader(audioBuffer: Buffer, sampleRate: number, channels: number, bitsPerSample: number): Buffer {
   const dataSize = audioBuffer.length;
   const fileSize = 36 + dataSize;
@@ -102,12 +101,12 @@ function addWavHeader(audioBuffer: Buffer, sampleRate: number, channels: number,
   const header = Buffer.alloc(44);
   
   // RIFF header
-  header.write('RIFF', 0);
+  header.write('RIFF', 0, 4, 'ascii');
   header.writeUInt32LE(fileSize, 4);
-  header.write('WAVE', 8);
+  header.write('WAVE', 8, 4, 'ascii');
   
   // fmt chunk
-  header.write('fmt ', 12);
+  header.write('fmt ', 12, 4, 'ascii');
   header.writeUInt32LE(16, 16); // fmt chunk size
   header.writeUInt16LE(1, 20);  // PCM format
   header.writeUInt16LE(channels, 22);
@@ -117,8 +116,10 @@ function addWavHeader(audioBuffer: Buffer, sampleRate: number, channels: number,
   header.writeUInt16LE(bitsPerSample, 34);
   
   // data chunk
-  header.write('data', 36);
+  header.write('data', 36, 4, 'ascii');
   header.writeUInt32LE(dataSize, 40);
+  
+  console.log(`🎵 WAV created: ${dataSize} bytes data, ${fileSize} bytes total`);
   
   return Buffer.concat([header, audioBuffer]);
 }
