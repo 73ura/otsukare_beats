@@ -51,8 +51,9 @@ export async function generateVoiceWithGoogleTTS(
     // Base64デコードして音声バッファを作成（MP3形式）
     const audioBuffer = Buffer.from(audioContent, 'base64');
     
-    // 音声の長さを推定（文字数ベース、VOICEVOXと同じ方式）
-    const estimatedDuration = Math.max(1000, text.length * 80); // 1秒〜文字数×80ms
+    // 音声の長さを推定（日本語の読み上げ速度を考慮）
+    // 日本語：約5文字/秒 = 200ms/文字、Google TTSは少し早めなので150ms/文字
+    const estimatedDuration = Math.max(2000, text.length * 150); // 最低2秒、文字数×150ms
     
     // Vercelの/tmpディレクトリにMP3ファイルを保存
     const audioId = generateAudioId();
