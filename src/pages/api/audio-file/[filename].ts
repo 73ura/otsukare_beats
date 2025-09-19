@@ -19,7 +19,7 @@ export default async function handler(
   }
 
   // ファイル名のバリデーション（セキュリティ）
-  if (!/^[a-z0-9_]+\.wav$/i.test(filename)) {
+  if (!/^[a-z0-9_]+\.(wav|mp3)$/i.test(filename)) {
     res.status(400).json({ error: "Invalid filename format" });
     return;
   }
@@ -38,8 +38,11 @@ export default async function handler(
     // ファイルを読み込み
     const audioBuffer = await fs.readFile(filePath);
 
+    // ファイル拡張子からContent-Typeを決定
+    const contentType = filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav';
+    
     // LINE音声メッセージ用のヘッダー設定
-    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', audioBuffer.length.toString());
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=300');

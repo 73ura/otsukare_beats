@@ -22,8 +22,7 @@ export async function generateVoiceWithGoogleTTS(
       input: { text: text },
       voice: voiceConfig,
       audioConfig: {
-        audioEncoding: 'LINEAR16', // WAVフォーマット（LINEでより互換性が高い）
-        sampleRateHertz: 16000, // 16kHz（LINE推奨）
+        audioEncoding: 'MP3', // MP3フォーマット（LINE互換性が高い）
         speakingRate: 1.0,
         pitch: 0.0,
         volumeGainDb: 0.0
@@ -48,15 +47,12 @@ export async function generateVoiceWithGoogleTTS(
     const data = await response.json();
     const audioContent = data.audioContent;
 
-    // Base64デコードして音声バッファを作成
+    // Base64デコードして音声バッファを作成（MP3形式）
     const audioBuffer = Buffer.from(audioContent, 'base64');
     
-    // WAVヘッダーを追加してWAVファイルを作成
-    const wavBuffer = addWavHeader(audioBuffer, 16000, 1, 16);
-    
-    // Vercelの/tmpディレクトリに音声ファイルを保存
+    // Vercelの/tmpディレクトリにMP3ファイルを保存
     const audioId = generateAudioId();
-    const audioUrl = await saveAudioToTemp(wavBuffer, audioId);
+    const audioUrl = await saveAudioToTemp(audioBuffer, audioId);
 
     return { audioId, audioUrl };
   } catch (error) {
@@ -73,16 +69,16 @@ function generateAudioId(): string {
   return `${timestamp}_${randomId}`;
 }
 
-// Vercelの/tmpディレクトリに音声ファイルを保存
-async function saveAudioToTemp(wavBuffer: Buffer, audioId: string): Promise<string> {
+// Vercelの/tmpディレクトリにMP3ファイルを保存
+async function saveAudioToTemp(audioBuffer: Buffer, audioId: string): Promise<string> {
   const fs = await import('fs/promises');
   const path = await import('path');
   
-  // /tmpディレクトリに保存（Vercelで利用可能）
-  const fileName = `${audioId}.wav`;
+  // /tmpディレクトリにMP3として保存
+  const fileName = `${audioId}.mp3`;
   const filePath = path.join('/tmp', fileName);
   
-  await fs.writeFile(filePath, wavBuffer);
+  await fs.writeFile(filePath, audioBuffer);
   
   // 音声URLを生成
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
