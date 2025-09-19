@@ -1,4 +1,4 @@
-# 🎤 ラップ応援ボット
+# 🎤 ラップで応援ボット「おつかれビーツ」
 
 ユーザーの一言や愚痴から、即興ラップ風の応援メッセージを生成する LINE ボット
 
@@ -48,22 +48,16 @@ project-root/
 │   │   └── voicevox.ts           # VOICEVOX APIラッパー
 │   ├── pages/
 │   │   ├── api/
-│   │   │   └── line/
-│   │   │       ├── webhook.ts           # LINE Webhook受信メイン
-│   │   │       ├── generate-voice.ts    # 音声生成API
-│   │   │       ├── messages.ts          # 応答メッセージ管理
-│   │   │       ├── rap-patterns.ts      # ラップパターン定義
-│   │   │       ├── test-openai.ts       # OpenAIテストAPI
-│   │   │       ├── test-openai-comment.ts # コメント実験API
-│   │   │       ├── voice.ts             # 音声関連API
-│   │   │       └── webhook.ts.backup    # 旧Webhook実装
+│   │   │   ├── generate-voice.ts        # 音声生成API
+│   │   │   ├── line/
+│   │   │   │   ├── webhook.ts           # LINE Webhook受信メイン
+│   │   │   │   └── webhook.ts.backup    # 旧Webhook実装
+│   │   │   ├── messages.ts              # 応答メッセージ管理
+│   │   │   └── test-openai.ts           # OpenAIテストAPI
 │   │   ├── error.tsx
 │   │   ├── index.tsx
 │   │   └── types/
 │   │       └── voice.ts                 # 型定義
-│   └── utils/
-│       ├── constants.ts                 # 定数管理
-│       └── helpers.ts                   # 汎用ユーティリティ関数
 ├── .env                                # 環境変数(本番・開発)
 ├── .env.example                        # 環境変数ひな型
 ├── .eslintrc.json                      # Lintルール

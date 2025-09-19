@@ -1,5 +1,5 @@
 {
-  "name": "teama_section8",
+  "name": "otsukare-beats",
   "version": "1.0.0",
   "description": "ユーザーの一言や愚痴から、即興ラップ風の応援メッセージを生成する LINE ボット",
   "main": "index.js",
